@@ -1,0 +1,26 @@
+"jailbreak"
+{
+	"base"		"base"
+	"title"		"Jailbreak"
+	"maps"		"^jb_|^ba_"
+	"menusystem"	"1"
+	
+	"settings"
+	{
+		1
+		{
+			"name"		"jb_round_limit"
+			"text"		"Max round limit before trying to change map."
+			"type"		"Numeric"
+			"default"	"30"
+		}
+		
+		2
+		{
+			"name"		"jb_time_limit"
+			"text"		"Round time limit in seconds."
+			"type"		"Numeric"
+			"default"	"900"
+		}
+	}
+}
