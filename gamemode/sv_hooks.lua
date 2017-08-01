@@ -38,9 +38,11 @@ function GM:InitPostEntity()
 	local maps, _ = file.Find("maps/*.bsp", "GAME")
 	
 	for k, v in pairs(maps) do
-		v = string.Replace(v, ".bsp", "")
-		
-		GAMEMODE.MapList[k] = v
+		if string.find(v, "ba_") or string.find(v, "jb_") then
+			v = string.Replace(v, ".bsp", "")
+			
+			GAMEMODE.MapList[k] = v
+		end
 	end
 	
 	for _, ent in pairs(ents.FindByClass("weapon_*")) do

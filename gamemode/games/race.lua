@@ -56,6 +56,7 @@ function LR:Init()
 	local ent = ents.Create("weapon_deagle")
 	ent:SetPos(ePos)
 	ent:SetAngles(eAng)
+	ent:SetOwner(nil)
 	ent:Spawn()
 	
 	inmate:SetPos(iPos)
@@ -76,6 +77,22 @@ function LR:Init()
 	
 	inmate:Freeze(true)
 	guard:Freeze(true)
+	
+	timer.Create("blip", 5, 0, function()
+		if IsValid(ent) then
+			if IsValid(ent:GetOwner()) then
+				timer.Destroy("blip")
+				
+				if ent:GetOwner() == inmate then
+					guard:Kill()
+				else
+					inmate:Kill()
+				end
+			end
+			
+			ent:EmitSound("buttons/blip2.wav", ent:GetPos(), 25, 100, 1, 0)
+		end
+	end)
 	
 	timer.Simple(3, function()
 		guard:Freeze(false)

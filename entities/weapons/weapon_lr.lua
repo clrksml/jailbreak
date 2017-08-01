@@ -68,8 +68,10 @@ function SWEP:Equip()
 	self:GetOwner():ChatPrint("---------------------------------------------")
 	self:GetOwner():ChatPrint("Primary Attack to place positions.")
 	self:GetOwner():ChatPrint("Secondary Attack to change LR game.")
+	self:GetOwner():ChatPrint("Secondary Attack + Speed to change yaw angle.")
 	self:GetOwner():ChatPrint("Reload to undo current LR game positions.")
 	self:GetOwner():ChatPrint("Speed + Reload to undo all LR game positions.")
+	self:GetOwner():ChatPrint("Zoom + Reload to save all LR game positions.")
 	self:GetOwner():ChatPrint("---------------------------------------------")
 end
 
