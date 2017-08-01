@@ -22,5 +22,13 @@
 			"type"		"Numeric"
 			"default"	"900"
 		}
+		
+		3
+		{
+			"name"		"jb_ratio"
+			"text"		"Inmate to Guard ratio."
+			"type"		"Numeric"
+			"default"	"4"
+		}
 	}
 }

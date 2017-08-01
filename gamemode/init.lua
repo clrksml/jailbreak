@@ -1,6 +1,6 @@
 CreateConVar("jb_round_limit", "30", FCVAR_NOTIFY, "Max round limit before trying to change map.")
 CreateConVar("jb_time_limit", "900", FCVAR_NOTIFY, "Round time limit in seconds.")
-CreateConVar("jb_ratio", "3", FCVAR_NOTIFY, "Inmate to Guard ratio.")
+CreateConVar("jb_ratio", "4", FCVAR_NOTIFY, "Inmate to Guard ratio.")
 
 GM.Ratio = GetConVar("jb_ratio"):GetInt()
 

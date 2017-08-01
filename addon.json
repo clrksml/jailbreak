@@ -1,0 +1,14 @@
+{
+	"title" :	"jailbreak",
+	"type"  :	"gamemode",
+	"tags"  :	["roleplay","fun"],
+	"ignore":
+	[
+		"*.cmd",
+		"*.ini",
+		"*.lnk",
+		"*.url",
+		"jailbreak.jpg",
+		"jailbreak.png"
+	]
+}
