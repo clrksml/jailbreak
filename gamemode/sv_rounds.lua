@@ -199,7 +199,7 @@ function GM:EndRound()
 		map = table.FindNext(GAMEMODE.MapList, game.GetMap())
 	end
 	
-	if (ROUND_NUM >= ROUND_LIMIT) then
+	if (ROUND_NUM > ROUND_LIMIT) then
 		if !GAMEMODE.NextMap then 
 			game.ConsoleCommand("changelevel " .. map .. " \n")
 		end

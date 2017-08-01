@@ -76,7 +76,10 @@ function GM:DrawHUD()
 	
 	if type(_warden) == "Player" then
 		_warden = _warden:Nick()
+	else
+		_warden = "No warden :("
 	end
+	
 	
 	surface.DrawGradient(x, y, 140, 24, 2, Color(45, 45, 45), Color(47, 47, 47))
 	surface.DrawGradient(x, y, math.Clamp(1, _health * 1.4, 125), 24, 1, Color(207, 57, 58), Color(196, 48, 49))
@@ -233,7 +236,7 @@ function GM:DrawPings()
 end
 
 function GM:DrawLR()
-	if !LocalPlayer():CanLR() then return end
+	if !LocalPlayer():GetLR() then return end
 	
 	local x, y, color = 2, 158, team.GetColors(LocalPlayer())
 	
@@ -245,7 +248,7 @@ function GM:DrawLR()
 	for id, val in SortedPairs(GAMEMODE.LastRequests) do
 		surface.DrawGradient(x, y, 150, 24, 1, Color(115, 115, 115), Color(101, 101, 101))
 		surface.DrawGradient(x, y, 24, 24, 1, color[1], color[2])
-		surface.DrawSentence("qsm", Color(255, 255, 255), x + 8, y + 2, id)
+		surface.DrawSentence("qsm", Color(255, 255, 255), x + 8, y + 2, id + 1)
 		surface.DrawSentence("qsm", Color(255, 255, 255), x + 26, y + 2, val[2])
 		
 		y = y + 26
@@ -283,9 +286,9 @@ function GM:DrawHelp()
 end
 
 function GM:PlayerBindPress(ply, bind, pressed)
-	if ply:IsInmate() and LocalPlayer():CanLR() then
+	if ply:IsInmate() and LocalPlayer():GetLR() then
 		for k, v in  SortedPairs(GAMEMODE.LastRequests) do
-			if string.find(bind, "slot" .. k) and pressed then
+			if string.find(bind, "slot" .. k + 1) and pressed then
 				
 				RunConsoleCommand("jb_lr", v[1])
 				

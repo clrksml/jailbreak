@@ -2,6 +2,10 @@ local Player = FindMetaTable("Player")
 local Entity = FindMetaTable("Entity")
 
 function Player:CanLR()
+	return team.NumPlayers(TEAM_INMATE) and (GAMEMODE:GetWarden() != false) and (self == team.GetPlayers(TEAM_INMATE)[1])
+end
+
+function Player:GetLR()
 	return self:GetNWBool("lr", false)
 end
 

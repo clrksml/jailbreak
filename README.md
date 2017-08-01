@@ -19,7 +19,7 @@ Jailbreak is a roleplay gamemode where indivuals play one of thre roles(Inmate, 
  
  	jb_time_limit - 900 - Round time limit in seconds.
  
- 	jb_ratio - 3 - Inmate to Guard ratio.
+ 	jb_ratio - 4 - Inmate to Guard ratio.
  
  Admins and SuperAdmin receive logs during gameplay related to certain events. Player Killed, Player Damage, etc. Logs are located in data/jailbreak/logs folder.
 

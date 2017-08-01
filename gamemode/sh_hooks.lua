@@ -7,5 +7,5 @@ function GM:GetWarden()
 		end
 	end
 	
-	return "No warden :("
+	return false
 end

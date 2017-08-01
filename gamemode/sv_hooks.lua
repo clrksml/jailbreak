@@ -116,6 +116,7 @@ function GM:PlayerLoadout( ply )
 	ply:SetCustomCollisionCheck(true)
 	ply:CollisionRulesChanged()
 	ply:SetModel(model)
+	ply:StripWeapons()
 	
 	for k, v in pairs(team.GetLoadout(ply)) do
 		ply:Give(v)
