@@ -68,7 +68,7 @@ function LR:Init()
 			guard:Freeze(false)
 			inmate:Freeze(false)
 			
-			CORE.ADMIN:NotifyAll(inmate:GetUserColor(), inmate:Nick(), color_white, " last request has started!")
+			ply:ChatPrint(inmate:Nick() .. " last request has started!")
 		else
 			inmate:Freeze(true)
 			guard:Freeze(true)

@@ -373,9 +373,13 @@ function GM:ShowTeam( ply )
 		GAMEMODE:SelectWarden(ply)
 	end
 	
-	if ply:IsInmate() and ply:CanLR() then
-		ply:SetLR(true)
-		ply:SendLR()
+	if ply:IsInmate() then
+		if ply:CanLR() then
+			ply:SetLR(true)
+			ply:SendLR()
+		else
+			ply:ChatPrint("You need a warden to LR")
+		end
 	end
 end
 
