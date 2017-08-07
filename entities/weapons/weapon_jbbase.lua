@@ -182,7 +182,7 @@ end
 
 function SWEP:CanSecondaryAttack()
 	if self:GetNextSecondaryFire() > CurTime() then
-		return flase
+		return false
 	end
 	
 	return true
