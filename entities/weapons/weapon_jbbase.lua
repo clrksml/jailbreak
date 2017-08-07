@@ -180,8 +180,18 @@ function SWEP:CanPrimaryAttack()
 	return true
 end
 
+function SWEP:CanSecondaryAttack()
+	if self:GetNextSecondaryFire() > CurTime() then
+		return flase
+	end
+	
+	return true
+end
+
 function SWEP:SecondaryAttack()
-	if self.Melee then 
+	if !self:CanSecondaryAttack() then return end
+	
+	if self.Melee then
 		self.Weapon:EmitSound(self.Primary.Sound)
 		
 		self:ShootBullet(self.Secondary.Damage, 0, 0, 0)
@@ -195,7 +205,6 @@ function SWEP:SecondaryAttack()
 	
 	if self:GetIronsights() then
 		self:SetIronsights(false)
-		self.Owner:SetFOV(self.ViewModelFOV - 20, 0.01)
 		
 		if CLIENT and self.Scope then
 			self.Owner:DrawViewModel(true)
@@ -203,7 +212,6 @@ function SWEP:SecondaryAttack()
 	else
 		self:SetWeaponHoldType(self.HoldType)
 		self:SetIronsights(true)
-		self.Owner:SetFOV(self.ViewModelFOV, 0.01)
 		
 		if CLIENT and self.Scope then
 			self.Owner:DrawViewModel(false)
@@ -301,7 +309,6 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRestore()
-	self.NextSecondaryAttack = 0
 	self:SetIronsights(false)
 end
 
