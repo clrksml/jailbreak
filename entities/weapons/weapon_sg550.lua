@@ -1,9 +1,9 @@
 AddCSLuaFile()
 DEFINE_BASECLASS("weapon_jbbase")
 
-SWEP.PrintName			= "SG 550"
-SWEP.Slot				= 0
-SWEP.SlotPos			= 1
+SWEP.PrintName				= "SG 550"
+SWEP.Slot					= 0
+SWEP.SlotPos				= 1
 
 if CLIENT then
 	killicon.AddFont("weapon_sg550", "CSKillIcons", "t", Color(255, 80, 0, 255))
@@ -33,8 +33,8 @@ SWEP.Primary.Damage			= 69
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Recoil			= 2
 SWEP.Primary.Cone			= 0.0065
-SWEP.Primary.Delay			= 0.65
+SWEP.Primary.Delay			= 0.35
 SWEP.Primary.ClipSize		= 30
 SWEP.Primary.DefaultClip	= 90
-SWEP.Primary.Automatic		= false
-SWEP.Primary.Ammo			= "ar"
+SWEP.Primary.Automatic		= true
+SWEP.Primary.Ammo			= "ar2"

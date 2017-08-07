@@ -14,13 +14,18 @@ function Player:SetLR( bool )
 end
 
 function Player:CanBecomeWarden()
-	if !self:IsGuard() or self:IsGuardBan() and !self:IsWarden() then
+	if !self:IsGuard() and !self:IsWarden() then
 		return false
 	end
 	
 	for _, ply in pairs(player.GetAll()) do
-		if ply != self and ply:GetNWBool("warden") then
-			return false
+		if ply:IsWarden() and ply != self then
+			if ply:IsDeadGuard() then
+				ply:SetWarden(false)
+				return true
+			else
+				return false
+			end
 		end
 	end
 	
@@ -55,8 +60,12 @@ function Player:IsSpec()
 	return self:Team() == TEAM_SPECTATOR
 end
 
-function Player:IsGuardBan()
-	return false
+function Player:HasGuardBan()
+	return self:GetNWBool("guardban", false)
+end
+
+function Player:SetGuardBan( bool )
+	self:SetNWBool("guardban", bool)
 end
 
 function Player:HasPrimary()
@@ -97,6 +106,38 @@ function Player:HasMisc()
 	end
 	
 	return false
+end
+
+function Player:SetLanguage( str )
+	if GAMEMODE:GetLanguages()[str] then
+		self:SetNWString("lang", str)
+		
+		self:ChatPrint(Format("Changed language to %s.", str))
+	else
+		self:ChatPrint(Format("Failed to change to %s.", str))
+	end
+end
+
+function Player:GetLanguage()
+	return self:GetNWString("lang", "english")
+end
+
+function Player:GetPhrase( str )
+	for k, v in pairs(GAMEMODE.Languages[self:GetLanguage()]) do
+		if k == str then
+			return v
+		end
+	end
+	
+	return "Error failed to get phrase [" .. tostring(str) .. "] from " .. self:GetLanguage() .. "."
+end
+
+function Player:SetKey(key, str)
+	self:SetNWString(key, str)
+end
+
+function Player:GetKey( key )
+	return self:GetNWString(key)
 end
 
 function Entity:IsPrimary()

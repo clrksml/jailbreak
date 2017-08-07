@@ -1,9 +1,9 @@
 AddCSLuaFile()
 DEFINE_BASECLASS("weapon_jbbase")
 
-SWEP.PrintName			= "MP5A1"
-SWEP.Slot				= 0
-SWEP.SlotPos			= 1
+SWEP.PrintName				= "MP5A1"
+SWEP.Slot					= 0
+SWEP.SlotPos				= 1
 
 if CLIENT then
 	killicon.AddFont("weapon_mp5navy", "CSKillIcons", "t", Color(255, 80, 0, 255))

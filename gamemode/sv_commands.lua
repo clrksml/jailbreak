@@ -19,21 +19,35 @@ concommand.Add("jb_lr", function(ply, cmd, args)
 		end
 	end
 	
-	ply.LastLR = CurTime() + 5
+	ply.LastLR = CurTime() + 1
 end)
 
 concommand.Add("jb_team", function(ply, cmd, args)
 	if !ply.LastChange then ply.LastChange = CurTime() end
 	if ply.LastChange > CurTime() then return end
+	if !args[1] then return end
+	
+	local TEAM = tonumber(args[1])
 	
 	local pl, g, p = #player.GetAll(), team.NumPlayers(TEAM_GUARD) + team.NumPlayers(TEAM_GUARD_DEAD), team.NumPlayers(TEAM_INMATE) + team.NumPlayers(TEAM_INMATE_DEAD)
 	
-	if ply:IsGuard() or ply:IsDeadGuard() and !table.HasValue(GAMEMODE.SwapInmate, ply) then
+	if ply:HasGuardBan() then
+		ply:ChatPrint(ply:GetPhrase("guardban"))
+		
+		return false
+	end
+	
+	ply.LastChange = CurTime() + 1
+	
+	if TEAM == TEAM_INMATE and !table.HasValue(GAMEMODE.SwapInmate, ply) then
 		table.insert(GAMEMODE.SwapInmate, ply)
-		ply:ChatPrint("Added to inmate swap list.")
-	elseif ply:IsInmate() or ply:IsDeadInmate() and !table.HasValue(GAMEMODE.SwapGuard, ply) then
+		ply:ChatPrint(Format(ply:GetPhrase("swaplist"), ply:GetPhrase("inmate")))
+	elseif TEAM == TEAM_GUARD and !table.HasValue(GAMEMODE.SwapGuard, ply) then
 		table.insert(GAMEMODE.SwapGuard, ply)
-		ply:ChatPrint("Added to guard swap list.")
+		ply:ChatPrint(Format(ply:GetPhrase("swaplist"), ply:GetPhrase("guard")))
+	else
+		GAMEMODE:PlayerJoinTeam(ply, TEAM_SPECTATOR)
+		return
 	end
 	
 	if GAMEMODE:GetPhase() == ROUND_WAIT then
@@ -56,8 +70,6 @@ concommand.Add("jb_team", function(ply, cmd, args)
 			end
 		end
 	end
-	
-	ply.LastChange = CurTime() + 5
 end)
 
 concommand.Add("jb_drop", function(ply, cmd, args)
@@ -66,7 +78,8 @@ concommand.Add("jb_drop", function(ply, cmd, args)
 	if ply:GetActiveWeapon():GetClass() != "weapon_hands" then
 		local wep = ply:GetActiveWeapon()
 		
-		ply:RemoveAmmo(ply:GetAmmoCount(wep:GetPrimaryAmmoType()), wep:GetPrimaryAmmoType())
+		ply:GetActiveWeapon():PreDrop(ply)
+		//ply:RemoveAmmo(ply:GetAmmoCount(wep:GetPrimaryAmmoType()), wep:GetPrimaryAmmoType())
 		ply:DropWeapon(ply:GetActiveWeapon())
 		wep:SetOwner(ply)
 	end

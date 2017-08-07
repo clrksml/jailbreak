@@ -19,7 +19,7 @@ function LR:Init()
 		end
 		
 		for _, ply in pairs(player.GetAll()) do
-			ply:ChatPrint("This round is a FREEDAY.")
+			ply:ChatPrint(ply:GetPhrase("freeday"))
 		end
 	end)
 end

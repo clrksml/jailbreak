@@ -28,13 +28,13 @@ net.Receive("WardenPings", function( len )
 		GAMEMODE.Pings = {}
 	end
 	
-	if #GAMEMODE.Pings >= 4 then
+	if #GAMEMODE.Pings >= 5 then
 		GAMEMODE.Pings = {}
 	end
 	
 	surface.PlaySound(Sound("buttons/blip2.wav"))
 	
-	GAMEMODE.Pings[#GAMEMODE.Pings + 1] = { Time = CurTime() + 10, Pos = net.ReadVector(), Pos2 = net.ReadVector()}
+	GAMEMODE.Pings[#GAMEMODE.Pings + 1] = { Time = CurTime() + 10, Pos = net.ReadVector(), Pos2 = net.ReadVector(), Color = net.ReadColor() }
 end)
 
 net.Receive("SendLastRequests", function( len )
@@ -42,7 +42,32 @@ net.Receive("SendLastRequests", function( len )
 		GAMEMODE.LastRequests = {}
 	end
 	
-	local id, str, num = net.ReadString(), net.ReadString(), net.ReadFloat()
+	local id, str, num, bool = net.ReadString(), net.ReadString(), net.ReadFloat(), net.ReadBool()
 	
-	GAMEMODE.LastRequests[num] = { [1] = id, [2] = str }
+	GAMEMODE.LastRequests[num] = { [1] = id, [2] = str, [3] = bool }
+end)
+
+net.Receive("UpdateMapVote", function( l )
+	GAMEMODE.MapList = {}
+	GAMEMODE.MapList = net.ReadTable()
+	
+	if GAMEMODE.VotePanel then
+		GAMEMODE.VotePanel:Clear()
+		GAMEMODE.VotePanel:Refresh()
+	end
+end)
+
+net.Receive("MapWinner", function( u )
+	LocalPlayer().VoteMapWinner = true
+	
+	GAMEMODE.MapList = net.ReadTable()
+	
+	if GAMEMODE.VotePanel then
+		GAMEMODE.VotePanel:Clear()
+		GAMEMODE.VotePanel:Refresh()
+	end
+end)
+
+net.Receive("DrawMapVote", function( u )
+	GAMEMODE.VotePanel = GAMEMODE:DrawMapVote()
 end)

@@ -7,7 +7,7 @@ function GM:SelectWarden( ply )
 	ply:SetWarden(true)
 	
 	for _, pl in pairs(player.GetAll()) do
-		pl:ChatPrint(ply:Nick() .. " has become warden.")
+		pl:ChatPrint(Format(pl:GetPhrase("warden"), ply:Nick()))
 		pl:SendLua([[surface.PlaySound(Sound("buttons/blip2.wav"))]])
 	end
 end

@@ -3,7 +3,7 @@ DEFINE_BASECLASS("weapon_base")
 
 if CLIENT then
 	SWEP.DrawCrosshair		= false
-	SWEP.ViewModelFOV		= 70
+	SWEP.ViewModelFOV		= 80
 	SWEP.CSMuzzleFlashes	= true
 	
 	surface.CreateFont("CSKillIcons", {font = "csd", size = ScreenScale(30), weight = 500, additive = true})
@@ -39,10 +39,15 @@ SWEP.DeploySpeed			= 1.4
 
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 1, "Ironsights")
+	self:NetworkVar("Float", 1, "StoredAmmo")
+	self:NetworkVar("Float", 2, "ClipAmmo")
 end
 
 function SWEP:Initialize()
 	self:SetDeploySpeed(self.DeploySpeed)
+	
+	self:SetStoredAmmo(self.Primary.ClipSize * 2)
+	self:SetClipAmmo(self.Primary.ClipSize)
 	
 	if self.SetHoldType then
 		self:SetHoldType(self.HoldType or "pistol")
@@ -54,14 +59,49 @@ if SERVER then
 		if self:IsOnFire() then
 			self:Extinguish()
 		end
+		
+		self:SetIronsights(false)
+		self.Owner:DrawViewModel(true)
+		
+		ply:RemoveAmmo(ply:GetAmmoCount(self.Primary.Ammo), self.Primary.Ammo)
+		
+		local ammo, clip = self:GetStoredAmmo(), self:GetClipAmmo()
+		
+		if ammo > 0 then
+			ply:GiveAmmo(ammo, self.Primary.Ammo, true)
+			self:SetStoredAmmo(0)
+		end
+		
+		if clip > 0 then
+			self:SetClip1(clip)
+			self:SetClipAmmo(0)
+		else
+			self:SetClip1(0)
+		end
 	end
-end
-
-function SWEP:TranslateFOV( fov )
-	if self:GetIronsights() then
-		return self.ViewModelFOV - 10
-	else
-		return self.ViewModelFOV
+	
+	function SWEP:Holster()
+		self:SetIronsights(false)
+		return true
+	end
+	
+	function SWEP:EquipAmmo( ply )
+		return false
+	end
+	
+	function SWEP:PreDrop( ply )
+		if IsValid(ply) and !self.Melee and self.Primary.Ammo != "none" then
+			local ammo, clip = self:Ammo1(), self:Clip1()
+			
+			if ammo > 0 then
+				self:SetStoredAmmo(ammo)
+				ply:RemoveAmmo(ammo, self.Primary.Ammo)
+			end
+			
+			if clip >= 0 then
+				self:SetClipAmmo(clip)
+			end
+		end
 	end
 end
 
@@ -155,6 +195,7 @@ function SWEP:SecondaryAttack()
 	
 	if self:GetIronsights() then
 		self:SetIronsights(false)
+		self.Owner:SetFOV(self.ViewModelFOV - 20, 0.01)
 		
 		if CLIENT and self.Scope then
 			self.Owner:DrawViewModel(true)
@@ -162,6 +203,7 @@ function SWEP:SecondaryAttack()
 	else
 		self:SetWeaponHoldType(self.HoldType)
 		self:SetIronsights(true)
+		self.Owner:SetFOV(self.ViewModelFOV, 0.01)
 		
 		if CLIENT and self.Scope then
 			self.Owner:DrawViewModel(false)
@@ -264,7 +306,7 @@ function SWEP:OnRestore()
 end
 
 function SWEP:Ammo1()
-	return IsValid(self.Owner) and self.Owner:GetAmmoCount(self.Primary.Ammo) or false
+	return self.Owner:GetAmmoCount(self.Weapon:GetPrimaryAmmoType())
 end
 
 function SWEP:GetIronsights()

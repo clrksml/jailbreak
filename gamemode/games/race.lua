@@ -98,9 +98,8 @@ function LR:Init()
 		guard:Freeze(false)
 		inmate:Freeze(false)
 		
-		for _, ply in pairs(player.GetAll()) do
-			ply:ChatPrint("A DEAGLE has been spawned in one of the cells. Go and find it.")
-		end
+		guard:ChatPrint(guard:GetPhrase("race"))
+		inmate:ChatPrint(inmate:GetPhrase("race"))
 	end)
 end
 GM:AddLR(LR)

@@ -27,10 +27,10 @@ function GM:PrepLR()
 	if inmate and IsValid(inmate[1]) then
 		inmate = inmate[1]
 		
-		inmate:ChatPrint("Last Request available. Press F2 for Last Request menu.")
+		inmate:ChatPrint(Format(inmate:GetPhrase("lastrequest"), inmate:GetKey("gm_showteam")))
 		
 		for _, ply in pairs(player.GetAll()) do
-			ply:ChatPrint(inmate:Nick() .. " can choose his last request.")
+			ply:ChatPrint(Format(ply:GetPhrase("lastrequest2"), inmate:Nick()))
 		end
 	end
 	
@@ -62,7 +62,8 @@ function GM:StartLR( id )
 	
 	for _, ply in pairs(player.GetAll()) do
 		GAMEMODE:AddLogs(inmate:Nick() .. " has choosen " .. self.LastRequests[id].Name .. " as their last request.")
-		ply:ChatPrint(inmate:Nick() .. " has choosen " .. self.LastRequests[id].Name .. " as their last request.")
+		
+		ply:ChatPrint(Format(ply:GetPhrase("lastrequest3"), inmate:Nick(), self.LastRequests[id].Name))
 		ply:SendData()
 	end
 	
@@ -78,10 +79,10 @@ function GM:EndLR()
 		for _, ply in pairs(player.GetAll()) do
 			if self.inmate:Alive() then
 				GAMEMODE:AddLogs(self.inmate:Nick() .. " beat " .. self.guard:Nick() .. ".")
-				ply:ChatPrint(self.inmate:Nick() .. " beat " .. self.guard:Nick() .. ".")
+				ply:ChatPrint(Format(ply:GetPhrase("lastrequest4"), self.inmate:Nick(), self.guard:Nick()))
 			elseif self.guard:Alive() then
 				GAMEMODE:AddLogs(self.guard:Nick() .. " beat " .. self.inmate:Nick() .. ".")
-				ply:ChatPrint(self.guard:Nick() .. " beat " .. self.inmate:Nick() .. ".")
+				ply:ChatPrint(Format(ply:GetPhrase("lastrequest4"), self.guard:Nick(), self.inmate:Nick()))
 			end
 		end
 	end
@@ -98,4 +99,3 @@ function GM:SetLRPlayers( i, g )
 	self.inmate = i
 	self.guard = g
 end
-

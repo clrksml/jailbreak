@@ -118,13 +118,13 @@ function DrawScoreboard()
 		surface.DrawGradient(0, 50, DFrame:GetWide() / 2, 30, 2, Color(175,59,58), Color(160, 54, 53))
 		surface.DrawGradient(DFrame:GetWide() / 2, 50, DFrame:GetWide() / 2, 30, 2, Color(58, 116, 175), Color(53, 106, 160))
 		
-		surface.DrawSentence("qsm", color_white, 6, 50, "Inmates")
+		surface.DrawSentence("qsm", color_white, 6, 50, LocalPlayer():GetPhrase("inmates"))
 		
 		w, h = surface.GetTextSize((team.NumPlayers(TEAM_INMATE) + team.NumPlayers(TEAM_INMATE_DEAD)) .. "/" .. game.MaxPlayers())
 		
 		surface.DrawSentence("qsm", color_white, (DFrame:GetWide() / 2) - (w + 6), 50, (team.NumPlayers(TEAM_INMATE) + team.NumPlayers(TEAM_INMATE_DEAD)) .. "/" .. game.MaxPlayers())
 		
-		surface.DrawSentence("qsm", color_white, (DFrame:GetWide() / 2) + 6, 50, "Guards")
+		surface.DrawSentence("qsm", color_white, (DFrame:GetWide() / 2) + 6, 50, LocalPlayer():GetPhrase("guards"))
 		
 		w, h = surface.GetTextSize((team.NumPlayers(TEAM_GUARD) + team.NumPlayers(TEAM_GUARD_DEAD)) .. "/" .. math.Round((game.MaxPlayers() / GAMEMODE.Ratio)))
 		
@@ -132,15 +132,15 @@ function DrawScoreboard()
 		
 		surface.SetFont("qtn")
 		
-		w, h = surface.GetTextSize("Name")
+		w, h = surface.GetTextSize(LocalPlayer():GetPhrase("name"))
 		
-		surface.DrawSentence("qtn", color_white, 26, 65, "Name")
-		surface.DrawSentence("qtn", color_white, (DFrame:GetWide() / 2) + 26, 65, "Name")
+		surface.DrawSentence("qtn", color_white, 26, 65, LocalPlayer():GetPhrase("name"))
+		surface.DrawSentence("qtn", color_white, (DFrame:GetWide() / 2) + 26, 65, LocalPlayer():GetPhrase("name"))
 		
-		w, h = surface.GetTextSize("Ping")
+		w, h = surface.GetTextSize(LocalPlayer():GetPhrase("ping"))
 		
-		surface.DrawSentence("qtn", color_white, (DFrame:GetWide() / 2) - (w + 2), 65, "Ping")
-		surface.DrawSentence("qtn", color_white, DFrame:GetWide() - (w + 2), 65, "Ping")
+		surface.DrawSentence("qtn", color_white, (DFrame:GetWide() / 2) - (w + 2), 65, LocalPlayer():GetPhrase("ping"))
+		surface.DrawSentence("qtn", color_white, DFrame:GetWide() - (w + 2), 65, LocalPlayer():GetPhrase("ping"))
 		
 	end
 	

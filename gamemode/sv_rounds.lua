@@ -62,7 +62,7 @@ function GM:AddRound()
 	ROUND_NUM = ROUND_NUM + 1
 end
 
-function GM:GetRoundTimeLimit()
+function GM:GetRoundLimit()
 	return ROUND_LIMIT
 end
 
@@ -79,6 +79,14 @@ function GM:StartRound()
 	
 	ROUND_WIN = 0
 	
+	for _, ply in pairs(player.GetAll()) do
+		if !ply:IsSpec() then
+			ply:UnSpectate()
+			ply:StripAmmo()
+			ply:StripWeapons()
+		end
+	end
+	
 	game.CleanUpMap()
 	
 	for _, ent in pairs(ents.FindByClass("weapon_*")) do
@@ -92,6 +100,10 @@ function GM:StartRound()
 			if IsValid(wep:GetPhysicsObject()) then
 				wep:GetPhysicsObject():EnableMotion(false)
 				wep:GetPhysicsObject():Sleep()
+			end
+			
+			if IsValid(ent:GetOwner()) then
+				ent:Remove()
 			end
 		end
 	end
@@ -121,37 +133,36 @@ function GM:StartRound()
 	g, p = team.NumPlayers(TEAM_GUARD) + team.NumPlayers(TEAM_GUARD_DEAD), team.NumPlayers(TEAM_INMATE) + team.NumPlayers(TEAM_INMATE_DEAD)
 	
 	for _, ply in pairs(player.GetAll()) do
-		ply:UnSpectate()
-		ply:StripAmmo()
-		ply:StripWeapons()
-		
-		if ply:IsDeadGuard() then
-			ply:SetTeam(TEAM_GUARD)
+		if !ply:IsSpec() then
+			if ply:IsDeadGuard() then
+				ply:SetTeam(TEAM_GUARD)
+			end
+			
+			if ply:IsDeadInmate() then
+				ply:SetTeam(TEAM_INMATE)
+			end
+			
+			ply:Spawn()
+			ply:SetMoveType(MOVETYPE_WALK)
+			ply:SetCustomCollisionCheck(true)
+			ply:CollisionRulesChanged()
+			ply:Freeze(true)
+			ply:Give("weapon_hands")
+			ply:SelectWeapon("weapons_hands")
+			
+			ply:ChatPrint(ply:GetPhrase("roundprep"))
 		end
-		
-		if ply:IsDeadInmate() then
-			ply:SetTeam(TEAM_INMATE)
-		end
-		
-		ply:Give("weapon_hands")
-		ply:Spawn()
-		ply:SetMoveType(MOVETYPE_WALK)
-		ply:SetCustomCollisionCheck(true)
-		ply:CollisionRulesChanged()
-		ply:Freeze(true)
-		
-		ply:ChatPrint("Round prep!")
-		
-		GAMEMODE.SwapGuard = {}
-		GAMEMODE.SwapInmate = {}
 	end
+	
+	GAMEMODE.SwapGuard = {}
+	GAMEMODE.SwapInmate = {}
 	
 	GAMEMODE:SetPhase(ROUND_PREP)
 	hook.Run("RoundPrep")
 	
 	if g < 1 then
 		for _, ply in pairs(player.GetAll()) do
-			ply:ChatPrint("Need a guard in order to play.")
+			ply:ChatPrint(ply:GetPhrase("needguard"))
 			ply:Freeze(false)
 		end
 		
@@ -159,6 +170,8 @@ function GM:StartRound()
 	end
 	
 	timer.Simple(5, function()
+		if ((ROUND_LIMIT != 0) and (ROUND_NUM > ROUND_LIMIT)) then return end
+		
 		GAMEMODE:SetPhase(ROUND_PLAY)
 		GAMEMODE:SetRoundTime(CurTime())
 		hook.Run("RoundStart")
@@ -169,14 +182,19 @@ function GM:StartRound()
 		for _, ply in pairs(player.GetAll()) do
 			ply:Freeze(false)
 			
-			ply:ChatPrint("Round start!")
-			ply:EmitSound("radio.letsgo")
+			ply:ChatPrint(ply:GetPhrase("roundstart"))
+			
+			if ply:IsGuard() then
+				ply:EmitSound("radio.letsgo")
+			end
 		end
 	end)
 	
 	timer.Simple(20, function()
+		if ((ROUND_LIMIT != 0) and (ROUND_NUM > ROUND_LIMIT)) then return end
+		
 		for _, ply in pairs(player.GetAll()) do
-			ply:ChatPrint("Inmates can now talk.")
+			ply:ChatPrint(ply:GetPhrase("speak"))
 		end
 		
 		if GAMEMODE:CanLR() then
@@ -195,13 +213,17 @@ function GM:EndRound()
 	GAMEMODE:AddLogs("ROUND " .. GAMEMODE:GetRound()[1] .. " END.")
 	GAMEMODE:EndLR()
 	
-	if (ROUND_NUM == 1) then
-		map = table.FindNext(GAMEMODE.MapList, game.GetMap())
-	end
-	
-	if (ROUND_NUM > ROUND_LIMIT) then
-		if !GAMEMODE.NextMap then 
-			game.ConsoleCommand("changelevel " .. map .. " \n")
+	if ((ROUND_LIMIT != 0) and (ROUND_NUM >= ROUND_LIMIT)) then
+		if !GAMEMODE.NextMap then
+			GAMEMODE:SetRoundTime(CurTime())
+			
+			net.Start("DrawMapVote")
+				net.WriteTable(GAMEMODE.MapList)
+			net.Broadcast()
+			
+			timer.Simple(35, function()
+				GAMEMODE:LoadNextMap()
+			end)
 		end
 		
 		GAMEMODE:SaveLogs()
@@ -210,7 +232,8 @@ function GM:EndRound()
 	for _, ply in pairs(player.GetAll()) do
 		ply:SetWarden(false)
 		ply:SetLR(false)
-		ply:ChatPrint("Round end!")
+		
+		ply:ChatPrint(ply:GetPhrase("roundend"))
 	end
 	
 	timer.Simple(5, function()
@@ -226,7 +249,7 @@ function GM:ThinkRound()
 	if (g < 1) and (p > 0) then
 		if (GAMEMODE:GetPhase() != ROUND_WAIT) then
 			for _, ply in pairs(player.GetAll()) do
-				ply:ChatPrint("Need a guard in order to play.")
+				ply:ChatPrint(ply:GetPhrase("needguard"))
 			end
 			
 			GAMEMODE:SetPhase(ROUND_WAIT)
@@ -254,7 +277,7 @@ function GM:ThinkRound()
 							GAMEMODE.SwapInmate[key] = nil
 						end
 					else
-							GAMEMODE.SwapInmate[key] = nil
+						GAMEMODE.SwapInmate[key] = nil
 					end
 				end
 			end

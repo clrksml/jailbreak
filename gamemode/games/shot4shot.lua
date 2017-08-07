@@ -67,8 +67,6 @@ function LR:Init()
 			
 			guard:Freeze(false)
 			inmate:Freeze(false)
-			
-			ply:ChatPrint(inmate:Nick() .. " last request has started!")
 		else
 			inmate:Freeze(true)
 			guard:Freeze(true)
