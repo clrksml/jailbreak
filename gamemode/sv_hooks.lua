@@ -125,6 +125,7 @@ function GM:PlayerLoadout( ply )
 	
 	ply:StripWeapons()
 	ply:SetCustomCollisionCheck(true)
+	ply:SetCanZoom(false)
 	ply:CollisionRulesChanged()
 	ply:SetModel(model)
 	ply:StripWeapons()

@@ -44,14 +44,11 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Initialize()
+	self:SetWeaponHoldType(self.HoldType)
 	self:SetDeploySpeed(self.DeploySpeed)
 	
 	self:SetStoredAmmo(self.Primary.ClipSize * 2)
 	self:SetClipAmmo(self.Primary.ClipSize)
-	
-	if self.SetHoldType then
-		self:SetHoldType(self.HoldType or "pistol")
-	end
 end
 
 if SERVER then
@@ -103,6 +100,18 @@ if SERVER then
 			end
 		end
 	end
+else
+	function SWEP:TranslateFOV( fov )
+		if self:GetIronsights() then
+			if self.Scope then
+				return fov - 50
+			else
+				return fov - 25
+			end
+		else
+			return fov
+		end
+	end
 end
 
 function SWEP:PrimaryAttack()
@@ -110,6 +119,7 @@ function SWEP:PrimaryAttack()
 	
 	self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+	
 	self.Weapon:EmitSound(self.Primary.Sound)
 	
 	if self.Melee then 
@@ -206,15 +216,18 @@ function SWEP:SecondaryAttack()
 	if self:GetIronsights() then
 		self:SetIronsights(false)
 		
-		if CLIENT and self.Scope then
-			self.Owner:DrawViewModel(true)
+		if self.Scope then
+			if CLIENT then
+				self.Owner:DrawViewModel(true)
+			end
 		end
 	else
-		self:SetWeaponHoldType(self.HoldType)
 		self:SetIronsights(true)
 		
-		if CLIENT and self.Scope then
-			self.Owner:DrawViewModel(false)
+		if self.Scope then
+			if CLIENT then
+				self.Owner:DrawViewModel(false)
+			end
 		end
 	end
 	
@@ -351,37 +364,32 @@ if CLIENT then
 			
 			scale = scale * (2 - math.Clamp( (CurTime() - LastShootTime) * 5, 0.0, 1.0 ))
 			
-			local alpha = 1
-			local bright = 1
-			surface.SetDrawColor(0, 0, 0, 255)
-			
 			local gap = 20 * scale * (self:GetIronsights() and 0.8 or 1)
 			local length = ScrW()
 			
-			surface.DrawLine(x - length, y, x - gap, y)
+			surface.SetDrawColor(Color(255, 255, 255))
+			surface.DrawLine(x - length - 1, y, x - gap - 1, y)
 			surface.DrawLine(x + length, y, x + gap, y)
-			surface.DrawLine(x, y - length, x, y - gap)
-			surface.DrawLine(x, y + length, x, y + gap)
+			surface.DrawLine(x - 1, y - length, x - 1, y - gap)
+			surface.DrawLine(x - 1, y + length, x - 1, y + gap)
 		end
 		
 		if !self:GetIronsights() then
-			local x = ScrW() / 2.0
-			local y = ScrH() / 2.0
-			local scale = math.max(0.2,  10 * self:GetPrimaryCone())
+			local x = ScrW() / 2
+			local y = ScrH() / 2
+			local scale = 0.25
 			local LastShootTime = self:LastShootTime()
 			
 			scale = scale * (2 - math.Clamp( (CurTime() - LastShootTime) * 5, 0.0, 1.0 ))
 			
-			local alpha = 1
-			local bright = 1
-			surface.SetDrawColor(0, 255, 0, 255)
-			
 			local gap = 20 * scale * (self:GetIronsights() and 0.8 or 1)
 			local length = gap + (25 * 1) * scale
-			surface.DrawLine( x - length, y, x - gap, y )
-			surface.DrawLine( x + length, y, x + gap, y )
-			surface.DrawLine( x, y - length, x, y - gap )
-			surface.DrawLine( x, y + length, x, y + gap )
+			
+			surface.SetDrawColor(Color(255, 255, 255))
+			surface.DrawLine(x - length - 1, y, x - gap - 1, y)
+			surface.DrawLine(x + length, y, x + gap, y)
+			surface.DrawLine(x - 1, y - length, x - 1, y - gap)
+			surface.DrawLine(x - 1, y + length, x - 1, y + gap)
 		end
 	end
 end
@@ -485,7 +493,7 @@ function SWEP:BulletPenetration( attacker, tr, dmginfo, bounce )
 	local distance = ( PeneTrace.HitPos - tr.HitPos ):Length()
 	local new_damage = self:GetPenetrationDamageLoss( tr.MatType, distance, dmginfo:GetDamage() )
 	
-	if( new_damage > 0 ) then
+	if ( new_damage > 0 ) then
 		local bullet = {
 			Num				 = 1,
 			Src				 = PeneTrace.HitPos,
