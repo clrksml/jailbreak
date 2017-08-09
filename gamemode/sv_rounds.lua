@@ -77,20 +77,20 @@ end
 function GM:StartRound()
 	if GAMEMODE:GetPhase() == ROUND_PREP and GAMEMODE:GetPhase() == ROUND_PLAY then return end
 	
-	ROUND_WIN = 0
-	
 	for _, ply in pairs(player.GetAll()) do
 		if !ply:IsSpec() then
 			ply:UnSpectate()
-			ply:StripAmmo()
-			ply:StripWeapons()
 		end
+		
+		ply:RemoveAllItems()
 	end
 	
-	game.CleanUpMap()
+	ROUND_WIN = 0
 	
 	for _, ent in pairs(ents.FindByClass("weapon_*")) do
-		if IsValid(ent) then
+		if IsValid(ent:GetOwner()) then
+			ent:Remove()
+		else
 			local wep = ents.Create(ent:GetClass())
 			wep:SetPos(ent:GetPos())
 			wep:SetAngles(ent:GetAngles())
@@ -101,10 +101,6 @@ function GM:StartRound()
 				wep:GetPhysicsObject():EnableMotion(false)
 				wep:GetPhysicsObject():Sleep()
 			end
-			
-			if IsValid(ent:GetOwner()) then
-				ent:Remove()
-			end
 		end
 	end
 	
@@ -112,7 +108,7 @@ function GM:StartRound()
 	
 	for key, ply in pairs(GAMEMODE.SwapGuard) do
 		if IsValid(ply) then
-			if ((pl % GAMEMODE.Ratio) == 0) then
+			if ((pl % GAMEMODE.Ratio) == 0) and ((game.MaxPlayers() / GAMEMODE.Ratio) > g) then
 				GAMEMODE:PlayerJoinTeam(ply, TEAM_GUARD)
 				GAMEMODE.SwapGuard[key] = nil
 			end
@@ -147,10 +143,9 @@ function GM:StartRound()
 			ply:SetCustomCollisionCheck(true)
 			ply:CollisionRulesChanged()
 			ply:Freeze(true)
-			ply:Give("weapon_hands")
-			ply:SelectWeapon("weapons_hands")
-			
 			ply:ChatPrint(ply:GetPhrase("roundprep"))
+			
+			GAMEMODE:PlayerLoadout(ply)
 		end
 	end
 	
@@ -203,7 +198,6 @@ function GM:StartRound()
 	end)
 end
 
-local map = game.GetMap()
 function GM:EndRound()
 	if (GAMEMODE:GetPhase() == ROUND_END) then return end
 	
@@ -229,14 +223,19 @@ function GM:EndRound()
 		GAMEMODE:SaveLogs()
 	end
 	
-	for _, ply in pairs(player.GetAll()) do
-		ply:SetWarden(false)
-		ply:SetLR(false)
-		
-		ply:ChatPrint(ply:GetPhrase("roundend"))
-	end
-	
 	timer.Simple(5, function()
+		for _, ply in pairs(player.GetAll()) do
+			ply:SetWarden(false)
+			ply:SetLR(false)
+			
+			ply:UnSpectate()
+			ply:RemoveAllItems()
+			
+			ply:ChatPrint(ply:GetPhrase("roundend"))
+		end
+		
+		game.CleanUpMap()
+		
 		GAMEMODE:StartRound()
 	end)
 end
@@ -259,7 +258,7 @@ function GM:ThinkRound()
 			if #GAMEMODE.SwapGuard > 0 then
 				for key, ply in pairs(GAMEMODE.SwapGuard) do
 					if IsValid(ply) then
-						if g > 1 and ((pl % GAMEMODE.Ratio) == 0) then
+						if (g > 1) and ((pl % GAMEMODE.Ratio) == 0) and ((game.MaxPlayers() / GAMEMODE.Ratio) > g) then
 							ply:SetTeam(TEAM_GUARD_DEAD)
 							GAMEMODE.SwapGuard[key] = nil
 						end
@@ -272,10 +271,8 @@ function GM:ThinkRound()
 			if #GAMEMODE.SwapInmate > 0 then
 				for key, ply in pairs(GAMEMODE.SwapInmate) do
 					if IsValid(ply) then
-						if ((pl % GAMEMODE.Ratio) != 0) then
-							ply:SetTeam(TEAM_INMATE_DEAD)
-							GAMEMODE.SwapInmate[key] = nil
-						end
+						ply:SetTeam(TEAM_INMATE_DEAD)
+						GAMEMODE.SwapInmate[key] = nil
 					else
 						GAMEMODE.SwapInmate[key] = nil
 					end

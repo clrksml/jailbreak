@@ -17,6 +17,12 @@ net.Receive("GameData", function( len )
 	elseif GAMEMODE.Phase == 2 then
 		hook.Run("RoundEnd", GAMEMODE.Win)
 	end
+	
+	for _, ply in pairs(player.GetAll()) do
+		if IsValid(ply.ragdoll) then
+			ply.ragdoll:Remove()
+		end
+	end
 end)
 
 net.Receive("PlayerDeath", function( len )
@@ -47,7 +53,7 @@ net.Receive("SendLastRequests", function( len )
 	GAMEMODE.LastRequests[num] = { [1] = id, [2] = str, [3] = bool }
 end)
 
-net.Receive("UpdateMapVote", function( l )
+net.Receive("UpdateMapVote", function( len )
 	GAMEMODE.MapList = {}
 	GAMEMODE.MapList = net.ReadTable()
 	
@@ -57,7 +63,7 @@ net.Receive("UpdateMapVote", function( l )
 	end
 end)
 
-net.Receive("MapWinner", function( u )
+net.Receive("MapWinner", function( len )
 	LocalPlayer().VoteMapWinner = true
 	
 	GAMEMODE.MapList = net.ReadTable()
@@ -68,6 +74,7 @@ net.Receive("MapWinner", function( u )
 	end
 end)
 
-net.Receive("DrawMapVote", function( u )
+net.Receive("DrawMapVote", function( len )
 	GAMEMODE.VotePanel = GAMEMODE:DrawMapVote()
 end)
+

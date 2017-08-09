@@ -57,17 +57,15 @@ concommand.Add("jb_team", function(ply, cmd, args)
 				GAMEMODE.SwapGuard[key] = nil
 			end
 			
-			if (g > 1) and ((pl % GAMEMODE.Ratio) == 0) then
+			if (g > 1) and ((pl % GAMEMODE.Ratio) == 0) and ((game.MaxPlayers() / GAMEMODE.Ratio) > g) then
 				GAMEMODE:PlayerJoinTeam(ply, TEAM_GUARD)
 				GAMEMODE.SwapGuard[key] = nil
 			end
 		end
 		
 		for key, ply in pairs(GAMEMODE.SwapInmate) do
-			if ((pl % GAMEMODE.Ratio) != 0) then
-				GAMEMODE:PlayerJoinTeam(ply, TEAM_INMATE)
-				GAMEMODE.SwapInmate[key] = nil
-			end
+			GAMEMODE:PlayerJoinTeam(ply, TEAM_INMATE)
+			GAMEMODE.SwapInmate[key] = nil
 		end
 	end
 end)
@@ -79,7 +77,6 @@ concommand.Add("jb_drop", function(ply, cmd, args)
 		local wep = ply:GetActiveWeapon()
 		
 		ply:GetActiveWeapon():PreDrop(ply)
-		//ply:RemoveAmmo(ply:GetAmmoCount(wep:GetPrimaryAmmoType()), wep:GetPrimaryAmmoType())
 		ply:DropWeapon(ply:GetActiveWeapon())
 		wep:SetOwner(ply)
 	end

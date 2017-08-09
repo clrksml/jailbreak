@@ -63,6 +63,7 @@ end
 
 function GM:PostDrawTranslucentRenderables()
 	GAMEMODE:DrawPings()
+	GAMEMODE:DrawLRTool()
 end
 
 function GM:DrawHUD()
@@ -279,6 +280,15 @@ function GM:DrawPings()
 	end
 end
 
+function GM:DrawLRTool()
+	if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "weapon_tool" then
+		local tr = LocalPlayer():GetEyeTrace()
+		
+		render.SetMaterial(Material("sgm/playercircle"))
+		render.DrawQuadEasy(tr.HitPos + tr.HitNormal, tr.HitNormal, 36, 36, Color(0, 0, 0, 150))
+	end
+end
+
 function GM:DrawLR()
 	if !LocalPlayer():GetLR() then return end
 	
@@ -340,9 +350,6 @@ function GM:DrawHelp()
 		
 		y = y + h
 	end
-end
-
-function GM:DrawDeath()
 end
 
 function GM:PlayerBindPress(ply, bind, pressed)

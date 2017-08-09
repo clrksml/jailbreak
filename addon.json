@@ -7,8 +7,6 @@
 		"*.cmd",
 		"*.ini",
 		"*.lnk",
-		"*.url",
-		"jailbreak.jpg",
-		"jailbreak.png"
+		"*.url"
 	]
 }

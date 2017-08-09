@@ -65,3 +65,19 @@ function GM:AddMapImage(map, path)
 	
 	self.MapImage[map] = path
 end
+
+function GM:ShouldCollide( pl, ply )
+	if IsValid(pl) and IsValid(ply) then
+		if pl:IsPlayer() and ply:IsPlayer() then
+			if pl:IsGuard() and ply:IsGuard() then
+				return false
+			end
+			
+			if pl:IsInmate() and ply:IsInmate() then
+				return false
+			end
+		end
+	end
+	
+	return true
+end

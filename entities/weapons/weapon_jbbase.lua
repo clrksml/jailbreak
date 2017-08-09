@@ -47,8 +47,10 @@ function SWEP:Initialize()
 	self:SetWeaponHoldType(self.HoldType)
 	self:SetDeploySpeed(self.DeploySpeed)
 	
-	self:SetStoredAmmo(self.Primary.ClipSize * 2)
-	self:SetClipAmmo(self.Primary.ClipSize)
+	if !self.Melee and self.Primary.Ammo != "none" then
+		self:SetStoredAmmo(self.Primary.ClipSize * 2)
+		self:SetClipAmmo(self.Primary.ClipSize)
+	end
 end
 
 if SERVER then
@@ -57,23 +59,27 @@ if SERVER then
 			self:Extinguish()
 		end
 		
+		self:SetOwner(ply)
+		
 		self:SetIronsights(false)
 		self.Owner:DrawViewModel(true)
 		
-		ply:RemoveAmmo(ply:GetAmmoCount(self.Primary.Ammo), self.Primary.Ammo)
-		
-		local ammo, clip = self:GetStoredAmmo(), self:GetClipAmmo()
-		
-		if ammo > 0 then
-			ply:GiveAmmo(ammo, self.Primary.Ammo, true)
-			self:SetStoredAmmo(0)
-		end
-		
-		if clip > 0 then
-			self:SetClip1(clip)
-			self:SetClipAmmo(0)
-		else
-			self:SetClip1(0)
+		if IsValid(ply) and !self.Melee and self.Primary.Ammo != "none" then
+			ply:RemoveAmmo(ply:GetAmmoCount(self.Primary.Ammo), self.Primary.Ammo)
+			
+			local ammo, clip = self:GetStoredAmmo(), self:GetClipAmmo()
+			
+			if ammo > 0 then
+				ply:GiveAmmo(ammo, self.Primary.Ammo, true)
+				self:SetStoredAmmo(0)
+			end
+			
+			if clip > 0 then
+				self:SetClip1(clip)
+				self:SetClipAmmo(0)
+			else
+				self:SetClip1(0)
+			end
 		end
 	end
 	
@@ -350,14 +356,15 @@ if CLIENT then
 			local y = ScrH() / 2.0
 			local w = (x - (ScrH() / 2)) + 2
 			
-			surface.SetDrawColor(Color(0, 0, 0, 255))
+			surface.SetDrawColor(color_black)
+			surface.SetMaterial(Material("sprites/scope"))
+			surface.DrawTexturedRect(x - ScrH() / 2, 0, ScrH(), ScrH())
 			
+			surface.SetDrawColor(color_black)
 			surface.DrawRect(0, 0, w, ScrH())
-			surface.DrawRect(x + (ScrH() / 2) - 2, 0, w, ScrH())
 			
-			surface.SetTexture(surface.GetTextureID("sprites/scope"))
-			surface.SetDrawColor(Color(255, 255, 255, 255))
-			surface.DrawTexturedRectRotated(x, y, ScrH(), ScrH(), 0)
+			surface.SetDrawColor(color_black)
+			surface.DrawRect(ScrW() - w, 0, ScrH() / 2, ScrH())
 			
 			local scale = math.max(0.2,  10 * self:GetPrimaryCone())
 			local LastShootTime = self:LastShootTime()
@@ -367,7 +374,7 @@ if CLIENT then
 			local gap = 20 * scale * (self:GetIronsights() and 0.8 or 1)
 			local length = ScrW()
 			
-			surface.SetDrawColor(Color(255, 255, 255))
+			surface.SetDrawColor(Color(0, 0, 0))
 			surface.DrawLine(x - length - 1, y, x - gap - 1, y)
 			surface.DrawLine(x + length, y, x + gap, y)
 			surface.DrawLine(x - 1, y - length, x - 1, y - gap)

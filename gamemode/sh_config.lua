@@ -16,11 +16,11 @@ GM.ToolAccess				= { "STEAM_0:0:740023", }
 
 // Use custom players spawns instead of the ones defined by the map.
 // Change boolean to true or false
-GM.CustomSpawns				= false
+GM.CustomSpawns				= true
 
 // Give Guards/Inmates starter weapons as defined below in the table/array.
 // Change boolean to true or false
-GM.StarterWeapons			= true
+GM.StarterWeapons			= false
 
 // Selection of models that Guards can spawn as.
 GM.GuardModels				= { "models/player/urban.mdl", "models/player/swat.mdl", "models/player/gasmask.mdl", "models/player/riot.mdl", }

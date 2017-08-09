@@ -18,6 +18,7 @@ function GM:Initialize()
 	GAMEMODE.SwapInmate = {}
 	GAMEMODE.Logs = {}
 	GAMEMODE.LRPos = {}
+	GAMEMODE.SpawnPos = {}
 	
 	file.CreateDir("jailbreak")
 	file.CreateDir("jailbreak/logs")
@@ -30,7 +31,11 @@ function GM:Initialize()
 		
 		if tbl then
 			for name, val in pairs(tbl) do
-				GAMEMODE.LRPos[name] = val
+				if name == "ispawns" or name == "gspawns" then
+					GAMEMODE.SpawnPos[name] = val
+				else
+					GAMEMODE.LRPos[name] = val
+				end
 			end
 		end
 	end
@@ -60,6 +65,36 @@ function GM:InitPostEntity()
 	end
 end
 
+function GM:IsSpawnpointSuitable(pl, spawnpointent, bMakeSuitable)
+	local Pos = spawnpointent
+	
+	if type(spawnpointent) == "Entity" then
+		Pos = spawnpointent:GetPos()
+	end
+	
+	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
+	
+	if ( pl:Team() == TEAM_SPECTATOR ) then return true end
+	
+	local Blockers = 0
+	
+	for k, v in pairs( Ents ) do
+		if ( IsValid( v ) && v != pl && v:GetClass() == "player" && v:Alive() ) then
+		
+			Blockers = Blockers + 1
+			
+			if ( bMakeSuitable ) then
+				v:Kill()
+			end
+			
+		end
+	end
+	
+	if ( bMakeSuitable ) then return true end
+	if ( Blockers > 0 ) then return false end
+	return true
+end
+
 function GM:PlayerSelectSpawn( ply )
 	local guards, inmates = ents.FindByClass("info_player_counterterrorist"), ents.FindByClass("info_player_terrorist")
 	
@@ -80,7 +115,35 @@ function GM:PlayerSelectSpawn( ply )
 			return table.Random(ents.FindByClass("info_player_counterterrorist"))
 		end
 	else
-		guards, inmates = ents.FindByClass("info_player_counterterrorist"), ents.FindByClass("info_player_terrorist")
+		if ply:IsGuard() or ply:IsDeadGuard() then
+			if GAMEMODE.SpawnPos['gspawns'] and #GAMEMODE.SpawnPos['gspawns'] >= (game.MaxPlayers() / GAMEMODE.Ratio)  then
+				for k, v in pairs(GAMEMODE.SpawnPos['gspawns']) do
+					if GAMEMODE:IsSpawnpointSuitable(ply, v.Pos, false) then
+						ply:SetPos(v.Pos)
+						ply:SetAngles(Angle(0, v.Ang.y, 0))
+						ply:SetEyeAngles(Angle(0, v.Ang.y, 0))
+						break
+					end
+				end
+			else
+				return table.Random(guards)
+			end
+		elseif ply:IsInmate() or ply:IsDeadInmate() then
+			if GAMEMODE.SpawnPos['ispawns'] and #GAMEMODE.SpawnPos['ispawns'] >= game.MaxPlayers() then
+				for k, v in pairs(GAMEMODE.SpawnPos['ispawns']) do
+					if GAMEMODE:IsSpawnpointSuitable(ply, v.Pos, false) then
+						ply:SetPos(v.Pos)
+						ply:SetAngles(Angle(0, v.Ang.y, 0))
+						ply:SetEyeAngles(Angle(0, v.Ang.y, 0))
+						break
+					end
+				end
+			else
+				return table.Random(inmates)
+			end
+		else
+			return table.Random(guards)
+		end
 	end
 end
 
@@ -93,6 +156,7 @@ function GM:PlayerInitialSpawn( ply )
 	ply:SendData()
 	ply:SendLR()
 	ply:SendMaps()
+	ply:RemoveAllItems()
 	
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		ply:SetTeam(TEAM_INMATE_DEAD)
@@ -111,32 +175,28 @@ function GM:PlayerSpawn( ply )
 	if !ply:IsSpec() then
 		ply:UnSpectate()
 		ply:SetupHands()
-		
-		GAMEMODE:PlayerLoadout(ply)
-	else
-		ply:StripWeapons()
 	end
+	
+	ply:RemoveAllItems()
 end
 
 function GM:PlayerLoadout( ply )
 	if ply:IsSpec() then return end
 	
-	local model = team.GetModels(ply)
-	
-	ply:StripWeapons()
 	ply:SetCustomCollisionCheck(true)
 	ply:SetCanZoom(false)
 	ply:CollisionRulesChanged()
-	ply:SetModel(model)
-	ply:StripWeapons()
+	ply:SetModel(team.GetModels(ply))
+	ply:RemoveAllItems()
+	ply:Give("weapon_hands")
+	ply:SelectWeapon("weapons_hands")
 	
 	if GAMEMODE.StarterWeapons then
-		for k, v in pairs(team.GetLoadout(ply)) do
+		for k, v in SortedPairs(team.GetLoadout(ply), true) do
 			ply:Give(v)
+			ply:SelectWeapon(v)
 		end
 	end
-	
-	ply:StripAmmo()
 	
 	for k, wep in pairs(ply:GetWeapons()) do
 		if wep:IsPrimary() or wep:IsSecondary() then
@@ -167,15 +227,14 @@ function GM:PlayerDeath( ply )
 			ply:SetTeam(TEAM_INMATE_DEAD)
 		end
 		
-		ply:StripAmmo()
-		ply:StripWeapons()
-		
 		GAMEMODE:PlayerSpawnAsSpectator(ply)
 		
 		if GAMEMODE:CanLR() then
 			GAMEMODE:PrepLR()
 		end
 	end
+	
+	ply:RemoveAllItems()
 end
 
 function GM:PlayerDisconnected( ply )
@@ -195,16 +254,12 @@ function GM:DoPlayerDeath( ply, att, dmg )
 		wep:PreDrop(ply)
 	end
 	
-	ply:Spectate(OBS_MODE_ROAMING)
+	ply:CreateRagdoll()
 	
-	local ragdoll = ents.Create("prop_ragdoll")
-	ragdoll:SetModel(ply:GetModel())
-	ragdoll:SetPos(ply:GetPos())
-	ragdoll:SetAngles(ply:GetAngles())
-	ragdoll:Spawn()
-	ragdoll:Activate()
-	ragdoll:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-	ragdoll:SetOwner(ply)
+	net.Start("PlayerDeath")
+	net.Send(ply)
+	
+	ply:Spectate(OBS_MODE_ROAMING)
 	
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		if IsValid(att) then
@@ -248,10 +303,6 @@ end
 function GM:PlayerSpawnAsSpectator( ply )
 	local players = GAMEMODE:GetPlayers()
 	local choice = table.GetFirstValue(players)
-	
-	net.Start("PlayerDeath")
-		net.WriteFloat(1)
-	net.Send(ply)
 	
 	if #players > 0 then
 		ply:SpectateEntity(players[1])

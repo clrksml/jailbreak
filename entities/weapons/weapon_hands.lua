@@ -24,7 +24,7 @@ SWEP.Primary.Delay				= 1
 SWEP.Primary.ClipSize			= 0
 SWEP.Primary.DefaultClip		= 0
 SWEP.Primary.Automatic			= true
-SWEP.Primary.Ammo				= ""
+SWEP.Primary.Ammo				= "none"
 
 SWEP.Secondary.Damage			= 0
 SWEP.Secondary.NumShots			= 0
@@ -33,7 +33,7 @@ SWEP.Secondary.Cone				= 0
 SWEP.Secondary.ClipSize			= 0
 SWEP.Secondary.DefaultClip		= 0
 SWEP.Secondary.Automatic		= true
-SWEP.Secondary.Ammo				= ""
+SWEP.Primary.Ammo				= "none"
 
 function SWEP:PrimaryAttack()
 	if self:GetHoldType() != "fist" then
