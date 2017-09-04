@@ -141,14 +141,26 @@ function Player:GetKey( key )
 end
 
 function Entity:IsPrimary()
+	if table.HasValue(GAMEMODE.PrimaryWeapons, self:GetClass()) then
+		return true
+	end
+	
 	return self.Slot == 0
 end
 
 function Entity:IsSecondary()
+	if table.HasValue(GAMEMODE.SecondaryWeapons, self:GetClass()) then
+		return true
+	end
+	
 	return self.Slot == 1
 end
 
 function Entity:IsMelee()
+	if table.HasValue(GAMEMODE.MeleeWeapons, self:GetClass()) then
+		return true
+	end
+	
 	return self.Slot == 2
 end
 

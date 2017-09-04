@@ -14,16 +14,27 @@ function GM:InitPostEntity()
 	LocalPlayer().LastWeapon = CurTime()
 	LocalPlayer().VoteMapLastVote, LocalPlayer().VoteMapWinner, LocalPlayer().VoteMapSelected = CurTime() + 17, false, 100
 	
-	local keys = { "gm_showhelp", "gm_showteam", "gm_showspare1", "gm_showspare2", "+zoom" }
+	local keys = { ["F1"] = "gm_showhelp", ["F2"] = "gm_showteam", ["F3"] = "gm_showspare1", ["F4"] = "gm_showspare2", ["H"] = "+zoom" }
 	
-	for k, v in pairs(keys) do
-		net.Start("SendKeys")
-			net.WriteString(v)
-			net.WriteString(input.LookupBinding(v))
-		net.SendToServer()
-		
-		LocalPlayer():SetKey(v, input.LookupBinding(v))
-	end
+	timer.Simple(3, function()
+		for k, v in pairs(keys) do
+			if input.LookupBinding(v) then
+				net.Start("SendKeys")
+					net.WriteString(v)
+					net.WriteString(input.LookupBinding(v))
+				net.SendToServer()
+				
+				LocalPlayer():SetKey(v, input.LookupBinding(v))
+			else
+				net.Start("SendKeys")
+					net.WriteString(v)
+					net.WriteString(k)
+				net.SendToServer()
+				
+				LocalPlayer():ChatPrint(Format(LocalPlayer():GetPhrase("nobind"), LocalPlayer():Nick(), k, v))
+			end
+		end
+	end)
 end
 
 function GM:HUDShouldDraw( str )
@@ -176,7 +187,17 @@ function GM:DrawWeaponSelection()
 	local wpns = {}
 	
 	for k, v in pairs(LocalPlayer():GetWeapons()) do
-		wpns[v:GetSlot() + 1] = v:GetPrintName()
+		local num = 4
+		
+		if v:IsMelee() then
+			num = 3
+		elseif v:IsSecondary() then
+			num = 2
+		elseif v:IsPrimary() then
+			num = 1
+		end
+		
+		wpns[num] = v:GetPrintName()
 	end
 	
 	for k, v in SortedPairs(wpns) do

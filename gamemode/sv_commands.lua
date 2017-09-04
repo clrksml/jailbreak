@@ -73,7 +73,7 @@ end)
 concommand.Add("jb_drop", function(ply, cmd, args)
 	if !IsValid(ply:GetActiveWeapon()) then return end
 	
-	if ply:GetActiveWeapon():GetClass() != "weapon_hands" then
+	if ply:GetActiveWeapon():GetClass() != "weapon_hands" or ply:GetActiveWeapon():GetClass() != "weapon_fists" then
 		local wep = ply:GetActiveWeapon()
 		
 		ply:GetActiveWeapon():PreDrop(ply)

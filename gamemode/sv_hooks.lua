@@ -188,8 +188,11 @@ function GM:PlayerLoadout( ply )
 	ply:CollisionRulesChanged()
 	ply:SetModel(team.GetModels(ply))
 	ply:RemoveAllItems()
-	ply:Give("weapon_hands")
-	ply:SelectWeapon("weapons_hands")
+	
+	if ply:IsGuard() or ply:IsInmate() then
+		ply:Give("weapon_hands")
+		ply:SelectWeapon("weapon_hands")
+	end
 	
 	if GAMEMODE.StarterWeapons then
 		for k, v in SortedPairs(team.GetLoadout(ply), true) do

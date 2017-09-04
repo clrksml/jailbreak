@@ -20,7 +20,7 @@ GM.CustomSpawns				= true
 
 // Give Guards/Inmates starter weapons as defined below in the table/array.
 // Change boolean to true or false
-GM.StarterWeapons			= false
+GM.StarterWeapons			= true
 
 // Selection of models that Guards can spawn as.
 GM.GuardModels				= { "models/player/urban.mdl", "models/player/swat.mdl", "models/player/gasmask.mdl", "models/player/riot.mdl", }
@@ -36,6 +36,15 @@ GM.GuardSecondaryWeapons	= { "weapon_deagle", "weapon_fiveseven", "weapon_glock"
 
 // Selection of weapons that Inmates can spawn with.
 GM.InmateWeapons			= { "weapon_hands", }
+
+// Force a weapon to use primary weapon slot
+GM.PrimaryWeapons			= {}
+
+// Force a weapon to use primary weapon slot
+GM.SecondaryWeapons			= {}
+
+// Force a weapon to use primary weapon slot
+GM.MeleeWeapons				= {}
 
 // Help text
 // Change boolean to true or false

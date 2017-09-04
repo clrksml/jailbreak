@@ -89,4 +89,6 @@ l.race = "A DEAGLE has been spawned in one of the cells. Go and find it."
 
 l.mapvote = "VOTE FOR NEXT MAP!"
 
+l.nobind = "Hey %s you don't have %s bound to %s. We suggest you rebind it to play."
+
 GM:CreateLanguage(l)
