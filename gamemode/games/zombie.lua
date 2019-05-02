@@ -1,8 +1,8 @@
 
 local LR = {}
-LR.ID = "warday"
-LR.Name = "War Day"
-LR.Info= "Given a random weapon kill your opponents."
+LR.ID = "zombie"
+LR.Name = "Zombie day"
+LR.Info= "Inmates are turned into zombies."
 LR.CustomSpawns = false
 
 function LR:Init(inmate, guard)
@@ -21,23 +21,17 @@ function LR:Init(inmate, guard)
 			for _, ply in pairs(player.GetAll()) do
 				ply:StripWeapons()
 
-				if ply:Team() == TEAM_INMATE or ply:Team() == TEAM_INMATE_DEAD then
-					ply:SetTeam(TEAM_INMATE)
-					ply:Spawn()
+				if ply:IsInmate() then
+					ply:SetHealth(300)
+					ply:Give("weapon_knife")
+					ply:Give("weapons_hands")
+				end
 
+				if ply:IsGuard() then
 					ply:Give(table.Random(GAMEMODE.GuardPrimaryWeapons))
 					ply:Give(table.Random(GAMEMODE.GuardSecondaryWeapons))
 				end
-
-				if ply:Team() == TEAM_GUARD or ply:Team() == TEAM_GUARD_DEAD then
-					ply:SetTeam(TEAM_GUARD)
-					ply:Spawn()
-
-					ply:Give(table.Random(GAMEMODE.GuardPrimaryWeapons))
-					ply:Give(table.Random(GAMEMODE.GuardSecondaryWeapons))
-				end
-
-				ply:ChatPrint(ply:GetPhrase("warday"))
+				ply:ChatPrint(ply:GetPhrase("zombie"))
 			end
 		end)
 	else

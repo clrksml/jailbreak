@@ -8,6 +8,7 @@ l.inmate = "Inmate"
 l.inmates = "Inmates"
 l.spectator = "Spectator"
 l.spectators = "Spectators"
+l.warden = "Warden"
 
 l.guardban = "You can't join guards. You have a guard ban."
 
@@ -23,8 +24,12 @@ l.lastrequest5 = "Last Request"
 
 l.needguard = "Need a guard in order to play."
 
-l.warden = "%s has become warden."
+l.rebel = "Rebel"
+l.isrebel = "%s has become a rebel."
+
+l.iswarden = "%s has become warden."
 l.nowarden = "No warden"
+l.wardendied = "The warden has died."
 
 l.waiting = "Waiting"
 l.prepping = "Prepping"
@@ -51,6 +56,8 @@ l.speccontrol = "Spectator Controls"
 l.name = "Name"
 l.ping = "Ping"
 
+l.markermax = "You've reached the marker limit. Try removing one."
+
 l.helptext = { "Jailbreak is a roleplay gamemode where indivuals play one of three roles(Inmate, Guard, and Warden).",
 "",
 "[Inmates]",
@@ -67,7 +74,7 @@ l.helptext = { "Jailbreak is a roleplay gamemode where indivuals play one of thr
 "Guards are the start of a round may become a warden. ",
 "Before cells are open warden must dictate orders (unless lr event)",
 "Wardens are expected to start games such as simon says to reduce the inmate population.",
-"Wardens can ping locations by pressing their +zoom bind",
+"Wardens can ping locations by pressing their +menu bind",
 "",
 "[General]",
 "When giving orders you must not try to entrap inmates. Unless it's a game.",
@@ -75,9 +82,12 @@ l.helptext = { "Jailbreak is a roleplay gamemode where indivuals play one of thr
 "Last requests days are to be played out as intended.",
 "",
 "[Key Binds]",
-"Team Selection  -  gm_showteam",
-"Last Request  -  gm_showhelp",
-"Ping Location  -  +zoom",
+"Team Selection  -  gm_showhelp.",
+"Last Request / Warden / Spectate Help  -  gm_showteam.",
+"Help & Info  -  gm_showspare2.",
+"ThirdPerson  -  +menu_context.",
+"Markers  -  +menu.",
+"Drop Weapon  -  impulse 201.",
 "",
 "[Credits]",
 "Clark - Creating Jailbreak.",
@@ -86,9 +96,11 @@ l.helptext = { "Jailbreak is a roleplay gamemode where indivuals play one of thr
 l.freeday = "This round is a FREE DAY."
 l.warday = "This round is a WAR DAY."
 l.race = "A DEAGLE has been spawned in one of the cells. Go and find it."
+l.zombie = "This round is a ZOMBIE DAY."
 
 l.mapvote = "VOTE FOR NEXT MAP!"
 
 l.nobind = "Hey %s you don't have %s bound to %s. We suggest you rebind it to play."
+l.nocss = "HEY BUDDY YOU DON'T HAVE CSS MOUNTED/INSTALLED."
 
 GM:CreateLanguage(l)

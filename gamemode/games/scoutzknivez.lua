@@ -1,8 +1,8 @@
 
 local LR = {}
-LR.ID = "s4s"
-LR.Name = "Shot for Shot"
-LR.Info= "Only one person can shoot. Kill your opponent with Desert Eagle."
+LR.ID = "scoutzknivez"
+LR.Name = "Scoutz Knivez"
+LR.Info= "Kill your opponent in low gravity with either a scout or a knife."
 LR.CustomSpawns = true
 LR.Guard = true
 
@@ -49,10 +49,12 @@ function LR:Init(inmate, guard)
 		inmate:StripAmmo()
 		inmate:StripWeapons()
 		inmate:SetHealth(100)
+		inmate:SetGravity(0.5)
 
 		guard:StripAmmo()
 		guard:StripWeapons()
 		guard:SetHealth(100)
+		guard:SetGravity(0.5)
 
 		inmate:Freeze(true)
 		guard:Freeze(true)
@@ -61,20 +63,18 @@ function LR:Init(inmate, guard)
 			if timer.RepsLeft("countdown") == 0 then
 				timer.Destroy("countdown")
 
-				inmate:StripAmmo()
-				inmate:GetWeapons()[1]:SetClip1(1)
-
-				guard:StripAmmo()
-				guard:GetWeapons()[1]:SetClip1(0)
-
 				guard:Freeze(false)
 				inmate:Freeze(false)
 			else
 				inmate:Freeze(true)
 				guard:Freeze(true)
 
-				inmate:Give("weapon_deagle")
-				guard:Give("weapon_deagle")
+				inmate:Give("weapon_scout")
+				inmate:Give("weapon_knife")
+				inmate:SelectWeapon("weapon_knife")
+				guard:Give("weapon_scout")
+				guard:Give("weapon_knife")
+				guard:SelectWeapon("weapon_knife")
 
 				inmate:ChatPrint(timer.RepsLeft("countdown"))
 				guard:ChatPrint(timer.RepsLeft("countdown"))

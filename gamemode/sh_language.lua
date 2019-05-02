@@ -1,4 +1,6 @@
 
+local pairs = pairs
+
 GM.Languages = {}
 
 function GM:CreateLanguage( tbl )

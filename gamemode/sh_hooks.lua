@@ -81,3 +81,4 @@ function GM:ShouldCollide( pl, ply )
 	
 	return true
 end
+

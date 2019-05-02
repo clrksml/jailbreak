@@ -1,15 +1,18 @@
-local game = game
-local timer = timer
-local team = team
-local player = player
+
 local net = net
 local util = util
-local string = string
 local math = math
 local ents = ents
-local table = table
 local file = file
+local game = game
+local team = team
+local timer = timer
+local player = player
+local string = string
+local table = table
 local pairs = pairs
+local Format = Format
+local RandomPairs = RandomPairs
 
 function GM:Initialize()
 	GAMEMODE.MapList = {}
@@ -19,16 +22,17 @@ function GM:Initialize()
 	GAMEMODE.Logs = {}
 	GAMEMODE.LRPos = {}
 	GAMEMODE.SpawnPos = {}
-	
+	GAMEMODE.Markers = {}
+
 	file.CreateDir("jailbreak")
 	file.CreateDir("jailbreak/logs")
 	file.CreateDir("jailbreak/maps")
-	
+
 	local str = file.Read("data/jailbreak/maps/" .. game.GetMap() .. ".txt", "GAME")
-	
+
 	if str then
 		local tbl = util.JSONToTable(str)
-		
+
 		if tbl then
 			for name, val in pairs(tbl) do
 				if name == "ispawns" or name == "gspawns" then
@@ -43,15 +47,15 @@ end
 
 function GM:InitPostEntity()
 	local maps, _ = file.Find("maps/*.bsp", "GAME")
-	
+
 	for k, v in pairs(maps) do
 		if string.find(v, "ba_") or string.find(v, "jb_") then
 			v = string.Replace(v, ".bsp", "")
-			
+
 			GAMEMODE.MapList[#GAMEMODE.MapList + 1] = { v, false, 0 }
 		end
 	end
-	
+
 	for _, ent in pairs(ents.FindByClass("weapon_*")) do
 		if IsValid(ent) then
 			local wep = ents.Create(ent:GetClass())
@@ -67,29 +71,29 @@ end
 
 function GM:IsSpawnpointSuitable(pl, spawnpointent, bMakeSuitable)
 	local Pos = spawnpointent
-	
+
 	if type(spawnpointent) == "Entity" then
 		Pos = spawnpointent:GetPos()
 	end
-	
+
 	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
-	
+
 	if ( pl:Team() == TEAM_SPECTATOR ) then return true end
-	
+
 	local Blockers = 0
-	
+
 	for k, v in pairs( Ents ) do
 		if ( IsValid( v ) && v != pl && v:GetClass() == "player" && v:Alive() ) then
-		
+
 			Blockers = Blockers + 1
-			
+
 			if ( bMakeSuitable ) then
 				v:Kill()
 			end
-			
+
 		end
 	end
-	
+
 	if ( bMakeSuitable ) then return true end
 	if ( Blockers > 0 ) then return false end
 	return true
@@ -97,7 +101,7 @@ end
 
 function GM:PlayerSelectSpawn( ply )
 	local guards, inmates = ents.FindByClass("info_player_counterterrorist"), ents.FindByClass("info_player_terrorist")
-	
+
 	if !GAMEMODE.CustomSpawns then
 		if ply:IsGuard() or ply:IsDeadGuard() then
 			for k, v in pairs(guards) do
@@ -150,24 +154,23 @@ end
 function GM:PlayerInitialSpawn( ply )
 	local pl = #player.GetAll()
 	local g, p = team.NumPlayers(TEAM_GUARD) + team.NumPlayers(TEAM_GUARD_DEAD) or 0, team.NumPlayers(TEAM_INMATE) + team.NumPlayers(TEAM_INMATE_DEAD) or 0
-	
+
 	ply:SetModel("models/player/phoenix.mdl")
-	
+
 	ply:SendData()
-	ply:SendLR()
 	ply:SendMaps()
 	ply:RemoveAllItems()
-	
+
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		ply:SetTeam(TEAM_INMATE_DEAD)
-		
+
 		GAMEMODE:PlayerSpawnAsSpectator(ply)
 	else
 		ply:SetTeam(TEAM_INMATE)
-		
+
 		GAMEMODE:PlayerLoadout(ply)
 	end
-	
+
 	ply:ChatPrint(Format(ply:GetKey("gm_showspare"), ply:GetPhrase("swapteam")))
 end
 
@@ -176,31 +179,31 @@ function GM:PlayerSpawn( ply )
 		ply:UnSpectate()
 		ply:SetupHands()
 	end
-	
+
 	ply:RemoveAllItems()
 end
 
 function GM:PlayerLoadout( ply )
 	if ply:IsSpec() then return end
-	
+
 	ply:SetCustomCollisionCheck(true)
 	ply:SetCanZoom(false)
 	ply:CollisionRulesChanged()
 	ply:SetModel(team.GetModels(ply))
 	ply:RemoveAllItems()
-	
+
 	if ply:IsGuard() or ply:IsInmate() then
 		ply:Give("weapon_hands")
 		ply:SelectWeapon("weapon_hands")
 	end
-	
+
 	if GAMEMODE.StarterWeapons then
-		for k, v in SortedPairs(team.GetLoadout(ply), true) do
+		for k, v in RandomPairs(team.GetLoadout(ply)) do
 			ply:Give(v)
 			ply:SelectWeapon(v)
 		end
 	end
-	
+
 	for k, wep in pairs(ply:GetWeapons()) do
 		if wep:IsPrimary() or wep:IsSecondary() then
 			ply:GiveAmmo(wep:GetMaxClip1() * 3, wep:GetPrimaryAmmoType(), true)
@@ -208,7 +211,7 @@ function GM:PlayerLoadout( ply )
 	end
 end
 
-function GM:PlayerShouldTakeDamage( ply, att ) 
+function GM:PlayerShouldTakeDamage( ply, att )
 	if IsValid(ply) and IsValid(att) then
 		if ply:IsPlayer() and att:IsPlayer() then
 			if ply:IsGuard() or ply:IsInmate() and att:IsGuard() or att:IsInmate() then
@@ -218,32 +221,41 @@ function GM:PlayerShouldTakeDamage( ply, att )
 			end
 		end
 	end
-	
+
 	return true
 end
 
-function GM:PlayerDeath( ply )
+function GM:PlayerDeath( ply, ent, att )
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		if ply:IsGuard() then
 			ply:SetTeam(TEAM_GUARD_DEAD)
 		elseif ply:IsInmate() then
 			ply:SetTeam(TEAM_INMATE_DEAD)
 		end
-		
+
 		GAMEMODE:PlayerSpawnAsSpectator(ply)
-		
+
 		if GAMEMODE:CanLR() then
 			GAMEMODE:PrepLR()
+
+			net.Start("JB_LR")
+				net.WriteInt(0, 32)
+			net.Broadcast()
 		end
 	end
-	
+
 	ply:RemoveAllItems()
+	ply:SetLR(false)
 end
 
 function GM:PlayerDisconnected( ply )
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		if GAMEMODE:CanLR() then
 			GAMEMODE:PrepLR()
+
+			net.Start("JB_LR")
+				net.WriteInt(0, 32)
+			net.Broadcast()
 		end
 	end
 end
@@ -252,32 +264,47 @@ function GM:DoPlayerDeath( ply, att, dmg )
 	local players = GAMEMODE:GetPlayers()
 	local choice = table.GetFirstValue(players)
 	local g, p = team.NumPlayers(TEAM_GUARD), team.NumPlayers(TEAM_INMATE)
-	
+
 	for _, wep in pairs(ply:GetWeapons()) do
 		wep:PreDrop(ply)
 	end
-	
+
 	ply:CreateRagdoll()
-	
-	net.Start("PlayerDeath")
-	net.Send(ply)
-	
+	ply:SetNWInt("LastDeath", CurTime() + 10)
+
 	ply:Spectate(OBS_MODE_ROAMING)
-	
-	if GAMEMODE:GetPhase() == ROUND_PLAY then
+
+	if (GAMEMODE:GetPhase() == ROUND_PLAY) then
 		if IsValid(att) then
+			local str = ""
+
 			if att:IsPlayer() then
 				if ply == att then
-					GAMEMODE:AddLogs(ply:Nick() .. " suicided.")
+					str = ply:Nick() .. " suicided."
 				else
-					GAMEMODE:AddLogs(ply:Nick() .. " was killed by " .. att:Nick() .. ".")
+					str = ply:Nick() .. " was killed by " .. att:Nick() .. "."
 				end
 			else
-				GAMEMODE:AddLogs(ply:Nick() .. " was killed by [world].")
+				str = ply:Nick() .. " was killed by [world]."
+			end
+
+			if ply:IsWarden() then
+				for _, pl in pairs(player.GetAll()) do
+					GAMEMODE:AddNotice(3, pl:GetPhrase("wardendied"), pl)
+				end
+			else
+				GAMEMODE:AddNotice(3, str, false)
+				GAMEMODE:AddLogs(str)
+			end
+
+			att:SetKills(att:GetKills() + 1)
+
+			if !att:IsRebel() and att:GetKills() >= GAMEMODE.RebelKills then
+				att:SetRebel(true)
 			end
 		end
 	end
-	
+
 	if g + p <= 1 then
 		GAMEMODE:EndRound()
 	end
@@ -289,13 +316,17 @@ end
 
 function GM:PlayerDeathSound( ply )
 	if ply:IsInmate() then
-		ply:EmitSound("vo/npc/male01/pain0" .. math.random(1,9) .. ".wav")
+		if GAMEMODE.LastRequest == "zf" then
+			ply:EmitSound("npc/zombie/zombie_pain" .. math.random(1,6) .. ".wav")
+		else
+			ply:EmitSound("vo/npc/male01/pain0" .. math.random(1,9) .. ".wav")
+		end
 	end
-	
+
 	if ply:IsGuard() then
 		ply:EmitSound("npc/metropolice/knockout2.wav")
 	end
-	
+
 	return true
 end
 
@@ -306,30 +337,26 @@ end
 function GM:PlayerSpawnAsSpectator( ply )
 	local players = GAMEMODE:GetPlayers()
 	local choice = table.GetFirstValue(players)
-	
+
+	ply:KillSilent()
+
 	if #players > 0 then
 		ply:SpectateEntity(players[1])
 		ply:Spectate(OBS_MODE_IN_EYE)
 	else
 		ply:Spectate(OBS_MODE_ROAMING)
 	end
-	
+
 	ply:SetMoveType(MOVETYPE_NOCLIP)
 end
 
 function GM:PlayerUse(ply, ent)
 	if !ply:IsGuard() and !ply:IsInmate() then return false end
-	
+
 	return true
 end
 
 function GM:KeyPress(ply, key)
-	if ply:IsGuard() and ply:IsWarden() then
-		if key == IN_ZOOM then
-			ply:SendPing()
-		end
-	end
-	
 	if ply:IsGuard() then
 		if key == IN_SPEED then
 			if ply:GetWalkSpeed() <= 225 then
@@ -339,35 +366,35 @@ function GM:KeyPress(ply, key)
 			end
 		end
 	end
-	
-	if GAMEMODE:GetPhase() != 1 then return end
-	
+
+	if GAMEMODE:GetPhase() != ROUND_PLAY then return end
+
 	if ply:IsDeadInmate() or ply:IsDeadGuard() or ply:IsSpec() then
 		local players = GAMEMODE:GetPlayers()
-		local choice, mode = ply:GetObserverTarget(), ply:GetObserverMode() 
-		
+		local choice, mode = ply:GetObserverTarget(), ply:GetObserverMode()
+
 		if !players then return end
-		
+
 		if key == IN_ATTACK then
 			choice = table.FindNext(players, choice)
-			
+
 			ply:SpectateEntity(choice)
 		end
-		
+
 		if key == IN_ATTACK2 then
 			choice = table.FindPrev(players, choice)
-			
+
 			ply:SpectateEntity(choice)
 		end
-		
+
 		if key == IN_JUMP then
 			ply:Spectate(OBS_MODE_ROAMING)
 		end
-		
+
 		if key == IN_DUCK then
 			ply:Spectate(OBS_MODE_CHASE)
 		end
-		
+
 		if key == IN_RELOAD then
 			ply:Spectate(OBS_MODE_IN_EYE)
 		end
@@ -389,20 +416,19 @@ end
 function GM:PlayerCanPickupWeapon( ply, wep )
 	if !IsValid(ply) or !IsValid(wep) then return end
 	if !ply:IsGuard() and !ply:IsInmate() then return false end
-	
+
 	if wep:GetClass() == "weapon_tool" and table.HasValue(GAMEMODE.ToolAccess, ply:SteamID()) then
-		ply:SendLR()
 		return true
 	end
-	
+
 	if GAMEMODE:GetLR() != "" then
 		if ply == GAMEMODE.guard or ply == GAMEMODE.inmate then
 			return true
 		end
-		
+
 		return false
 	end
-	
+
 	if wep:IsPrimary() then
 		if ply:HasPrimary() then
 			return false
@@ -410,7 +436,7 @@ function GM:PlayerCanPickupWeapon( ply, wep )
 			return true
 		end
 	end
-	
+
 	if wep:IsSecondary() then
 		if ply:HasSecondary() then
 			return false
@@ -418,7 +444,7 @@ function GM:PlayerCanPickupWeapon( ply, wep )
 			return true
 		end
 	end
-	
+
 	if wep:IsMelee() then
 		if ply:HasMelee() then
 			return false
@@ -426,7 +452,7 @@ function GM:PlayerCanPickupWeapon( ply, wep )
 			return true
 		end
 	end
-	
+
 	if wep:IsMisc() then
 		if ply:HasMisc() then
 			return false
@@ -434,28 +460,30 @@ function GM:PlayerCanPickupWeapon( ply, wep )
 			return true
 		end
 	end
-	
+
 	return false
 end
 
 function GM:ShowHelp( ply )
-	ply:ConCommand("jb_pickteam")
 end
 
 function GM:ShowTeam( ply )
 	if GAMEMODE:GetPhase() != ROUND_PLAY then return end
-	
+
 	if ply:IsGuard() then
 		GAMEMODE:SelectWarden(ply)
 	end
-	
+
 	if ply:IsInmate() then
 		if ply:CanLR() then
 			ply:SetLR(true)
-			ply:SendLR()
 		else
 			ply:ChatPrint(ply:GetPhrase("needwarden2"))
 		end
+	end
+
+	if ply:IsSpec() or ply:IsDeadGuard() or ply:IsDeadInmate() then
+		ply:SetNWInt("LastDeath", CurTime() + 10)
 	end
 end
 
@@ -468,57 +496,59 @@ end
 
 function GM:GetPlayers()
 	local players = {}
-	
+
 	for _, ply in pairs(player.GetAll()) do
 		if ply:IsGuard() or ply:IsInmate() then
 			table.insert(players, ply)
 		end
 	end
-	
+
 	return players
 end
 
 function GM:PlayerCanHearPlayersVoice( list, talk )
+	if talk == list then return false, false end
+
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
 		if talk:IsDeadInmate() or talk:IsDeadGuard() then
 			if !list:IsDeadInmate() or !list:IsDeadGuard() then
-				return false
+				return false, false
 			end
 		end
-		
-		if (GAMEMODE:GetRoundTime() + 20) <= CurTime() then
+
+		if (GAMEMODE:GetRoundTime() + 20) > CurTime() then
 			if !talk:IsGuard() then
-				return false
+				return false, false
 			end
 		end
-		
-		return true
+
+		return true, false
 	end
-	
-	return true
+
+	return true, false
 end
 
 function GM:PlayerJoinTeam(ply, new)
 	local old = ply:Team()
-	
+
 	if ply:IsWarden() then
 		ply:SetLR(false)
 		ply:SetWarden(false)
 	end
-	
+
 	ply:SetTeam(new)
 	ply:Spawn()
-	
+
 	if ply:IsSpec() then
 		GAMEMODE:PlayerSpawnAsSpectator( ply )
 	end
-	
+
 	GAMEMODE:OnPlayerChangedTeam(ply, old, new)
 end
 
 function GM:OnPlayerChangedTeam(ply, old, new)
 	local str = ""
-	
+
 	if new == TEAM_GUARD or new == TEAM_GUARD_DEAD then
 		str = ply:GetPhrase("guard")
 	elseif new == TEAM_INMATE or new == TEAM_INMATE_DEAD then
@@ -526,23 +556,23 @@ function GM:OnPlayerChangedTeam(ply, old, new)
 	else
 		str = ply:GetPhrase("spectator")
 	end
-	
+
 	str = Format(ply:GetPhrase("jointeam"), ply:Nick(), str)
-	
+
 	for _, pl in pairs(player.GetAll()) do
-		pl:ChatPrint(str)
+		GAMEMODE:AddNotice(4, str, pl)
 	end
 end
 
 function GM:ScalePlayerDamage(ply, hit, dmg)
 	local att = dmg:GetAttacker()
-	
+
 	if hit == HITGROUP_HEAD then
 		dmg:ScaleDamage(2)
 	else
 		dmg:ScaleDamage(1)
 	end
-	
+
 	if IsValid(att) and att:IsPlayer() then
 		GAMEMODE:AddLogs(att:Nick() .. " damaged " .. ply:Nick() .. " for " .. dmg:GetDamage())
 	end
@@ -550,35 +580,35 @@ end
 
 function GM:AddLogs( str )
 	if GAMEMODE:GetPhase() != ROUND_PLAY then return end
-	
+
 	if !GAMEMODE.Logs then
 		GAMEMODE.Logs = {}
 	end
-	
+
 	local time = string.ToMinutesSeconds(CurTime() - GAMEMODE:GetRoundTime())
-	
+
 	for _, ply in pairs(player.GetAll()) do
 		if ply:IsAdmin() or ply:IsSuperAdmin() then
 			ply:PrintMessage(HUD_PRINTCONSOLE, "[" .. time .. "] " .. str)
 		end
 	end
-	
+
 	table.insert(GAMEMODE.Logs, "[" .. time .. "] " .. str)
 end
 
 function GM:SaveLogs()
 	local str = ""
-	
+
 	for _, txt in pairs(GAMEMODE.Logs) do
 		str = str .. txt .. "\n"
 	end
-	
+
 	file.Write("jailbreak/logs/" .. os.date("%b_%d_%Y_%H_%M") .. ".txt", str)
 end
 
 function GM:LoadNextMap()
 	if GAMEMODE.NextMap then return end
-	
+
 	local h, c = 0, 0
 	for k, v in RandomPairs(GAMEMODE.MapList) do
 		if tonumber(v[3]) >= tonumber(h) then
@@ -586,21 +616,37 @@ function GM:LoadNextMap()
 			c = k
 		end
 	end
-	
-	net.Start("MapWinner")
+
+	net.Start("JB_MapWinner")
 		net.WriteTable(GAMEMODE.MapList[c])
 	net.Broadcast()
-	
-	for k, v in pairs(player.GetAll()) do
+
+	for _, ply in pairs(player.GetAll()) do
 		if GAMEMODE.MapList[c][3] <= 0 then
-			v:ChatPrint(GAMEMODE.MapList[c][1] .. " won (appears everyone forgot to vote)!")
+			ply:ChatPrint(GAMEMODE.MapList[c][1] .. " won (appears everyone forgot to vote)!")
 		else
-			v:ChatPrint(GAMEMODE.MapList[c][1] .. " won with " .. GAMEMODE.MapList[c][3] .. "/" .. #player.GetAll() .. "!")
+			ply:ChatPrint(GAMEMODE.MapList[c][1] .. " won with " .. GAMEMODE.MapList[c][3] .. "/" .. #player.GetAll() .. "!")
 		end
-		v:ChatPrint("Server changing level to " .. GAMEMODE.MapList[c][1] .. ".")
+		ply:ChatPrint("Server changing level to " .. GAMEMODE.MapList[c][1] .. ".")
 	end
-	
+
 	timer.Simple(3.1, function()
 		game.ConsoleCommand("changelevel " .. GAMEMODE.MapList[c][1] .. "\n")
 	end)
+end
+
+function GM:AddNotice(typ, str, ply)
+	if type(ply) == "Player" then
+		net.Start("JB_AddNotice")
+			net.WriteFloat(typ)
+			net.WriteString(str)
+		net.Send(ply)
+	else
+		for _, pl in pairs(player.GetAll()) do
+			net.Start("JB_AddNotice")
+				net.WriteFloat(typ)
+				net.WriteString(str)
+			net.Send(pl)
+		end
+	end
 end

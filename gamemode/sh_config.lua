@@ -1,6 +1,6 @@
 // Disables the provided HUD.
 // Only change the booleans
-GM.ShouldDrawHUD			= { ["hud"] = true, ["pid"] = true , ["ammo"] = true, ["weapon"] = true , ["spectator"] = true, ["lr"] = true, ["help"] = true }
+GM.ShouldDrawHUD			= { ["hud"] = true, ["pid"] = true , ["ammo"] = true, ["weapon"] = true , ["spectator"] = true, ["lr"] = true, ["help"] = true, ["notices"] = true }
 
 // Disables the provided Scoreboard.
 // Change boolean to true or false
@@ -37,18 +37,32 @@ GM.GuardSecondaryWeapons	= { "weapon_deagle", "weapon_fiveseven", "weapon_glock"
 // Selection of weapons that Inmates can spawn with.
 GM.InmateWeapons			= { "weapon_hands", }
 
-// Force a weapon to use primary weapon slot
+// Force a weapon to use primary weapon slot.
 GM.PrimaryWeapons			= {}
 
-// Force a weapon to use primary weapon slot
+// Force a weapon to use primary weapon slot.
 GM.SecondaryWeapons			= {}
 
-// Force a weapon to use primary weapon slot
+// Force a weapon to use primary weapon slot.
 GM.MeleeWeapons				= {}
 
 // Help text
-// Change boolean to true or false
+// Change boolean to true or false.
 GM.HelpText					= true
+
+// Marker duration
+// Change to interger. 0 = forever.
+GM.MarkerDuration = 5
+
+// Marker maximum
+// Change to interger. 6 = default.
+GM.MarkerMax = 6
+
+// Rebel kills
+// Change to interger. 2 = default
+GM.RebelKills = 2
+
+GM.WardenProps = { "models/props_junk/wood_crate001a.mdl", "models/props_c17/oildrum001.mdl", "models/props_trainstation/trashcan_indoor001b.mdl", "models/props_junk/PopCan01a.mdl", "models/props_junk/TrafficCone001a.mdl", }
 
 // Votemap Materials
 GM:AddMapImage("ba_jail_alcatraz_pre-final", "jailbreak/maps/ba_jail_alcatraz_pre-final.png")
