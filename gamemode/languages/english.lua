@@ -1,6 +1,7 @@
 local l = {}
 
 l.Name = "english"
+l.Alias = "en"
 
 l.guard = "Guard"
 l.guards = "Guards"
@@ -80,6 +81,7 @@ l.helptext = { "Jailbreak is a roleplay gamemode where indivuals play one of thr
 "When giving orders you must not try to entrap inmates. Unless it's a game.",
 "Lying and misleading inmates is strictly prohibitted unless it's a game.",
 "Last requests days are to be played out as intended.",
+"You can change your stance by pressing reload with your hands selected.",
 "",
 "[Key Binds]",
 "Team Selection  -  gm_showhelp.",

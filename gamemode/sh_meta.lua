@@ -104,7 +104,8 @@ function Player:GetLanguage()
 end
 
 function Player:GetPhrase( str )
-	for k, v in pairs(GAMEMODE.Languages[self:GetLanguage()]) do
+	local lang = self:GetLanguage() or "english"
+	for k, v in pairs(GAMEMODE.Languages[lang]) do
 		if k == str then
 			return v
 		end

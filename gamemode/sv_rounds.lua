@@ -142,8 +142,8 @@ function GM:StartRound()
 
 			ply:Spawn()
 			ply:SetMoveType(MOVETYPE_WALK)
-			ply:SetCustomCollisionCheck(true)
-			ply:CollisionRulesChanged()
+			--ply:SetCustomCollisionCheck(true)
+			--ply:CollisionRulesChanged()
 			ply:Freeze(true)
 			ply:SetKills(0)
 

@@ -170,8 +170,6 @@ function GM:PlayerInitialSpawn( ply )
 
 		GAMEMODE:PlayerLoadout(ply)
 	end
-
-	ply:ChatPrint(Format(ply:GetKey("gm_showspare"), ply:GetPhrase("swapteam")))
 end
 
 function GM:PlayerSpawn( ply )
@@ -186,15 +184,14 @@ end
 function GM:PlayerLoadout( ply )
 	if ply:IsSpec() then return end
 
-	ply:SetCustomCollisionCheck(true)
+	--ply:SetCustomCollisionCheck(true)
 	ply:SetCanZoom(false)
-	ply:CollisionRulesChanged()
+	--ply:CollisionRulesChanged()
 	ply:SetModel(team.GetModels(ply))
 	ply:RemoveAllItems()
 
 	if ply:IsGuard() or ply:IsInmate() then
 		ply:Give("weapon_hands")
-		ply:SelectWeapon("weapon_hands")
 	end
 
 	if GAMEMODE.StarterWeapons then
@@ -213,10 +210,14 @@ end
 
 function GM:PlayerShouldTakeDamage( ply, att )
 	if IsValid(ply) and IsValid(att) then
-		if ply:IsPlayer() and att:IsPlayer() then
+	if ply:IsPlayer() and att:IsPlayer() then
 			if ply:IsGuard() or ply:IsInmate() and att:IsGuard() or att:IsInmate() then
 				if ply:Team() == att:Team() then
-					return false
+					if GAMEMODE.FriendlyFire and GAMEMODE:GetPhase() == ROUND_PLAY then
+						return true
+					else
+						return false
+					end
 				end
 			end
 		end
@@ -298,7 +299,23 @@ function GM:DoPlayerDeath( ply, att, dmg )
 			end
 
 			att:SetKills(att:GetKills() + 1)
-
+			if GAMEMODE.MaxTKs > 0 then
+				if ply:Team() == att:Team() then
+					att:SetNWInt("teamkills", att:GetNWInt("teamkills", 0) + 1)
+				
+					if GAMEMODE.MaxTKs <= att:GetNWInt("teamkills", 0) then
+						if GAMEMODE.BanForTKs then
+							att:Ban(60, false)
+							att:Kick("To many teamkills.")
+						end
+						if GAMEMODE.KickForTKs then
+							att:Kick("To many teamkills.")
+						end
+					end
+				end
+			end
+			
+			
 			if !att:IsRebel() and att:GetKills() >= GAMEMODE.RebelKills then
 				att:SetRebel(true)
 			end
@@ -510,13 +527,11 @@ function GM:PlayerCanHearPlayersVoice( list, talk )
 	if talk == list then return false, false end
 
 	if GAMEMODE:GetPhase() == ROUND_PLAY then
-		if talk:IsDeadInmate() or talk:IsDeadGuard() then
-			if !list:IsDeadInmate() or !list:IsDeadGuard() then
-				return false, false
-			end
+		if (talk:IsDeadInmate() or talk:IsDeadGuard() or talk:IsSpec()) and (list:IsDeadInmate() or list:IsDeadGuard() or list:IsSpec()) then
+			return true, false
 		end
 
-		if (GAMEMODE:GetRoundTime() + 20) > CurTime() then
+		if (GAMEMODE:GetRoundTime() + GAMEMODE.SpeakTime) > CurTime() then
 			if !talk:IsGuard() then
 				return false, false
 			end
@@ -571,6 +586,12 @@ function GM:ScalePlayerDamage(ply, hit, dmg)
 		dmg:ScaleDamage(2)
 	else
 		dmg:ScaleDamage(1)
+	end
+	
+	if GAMEMODE.FriendlyFire and GAMEMODE:GetPhase() == ROUND_PLAY then
+		if ply:Team() == att:Team() then
+			dmg:ScaleDamage(0.5)
+		end
 	end
 
 	if IsValid(att) and att:IsPlayer() then

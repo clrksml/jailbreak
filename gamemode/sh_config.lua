@@ -1,3 +1,4 @@
+
 // Disables the provided HUD.
 // Only change the booleans
 GM.ShouldDrawHUD			= { ["hud"] = true, ["pid"] = true , ["ammo"] = true, ["weapon"] = true , ["spectator"] = true, ["lr"] = true, ["help"] = true, ["notices"] = true }
@@ -17,6 +18,26 @@ GM.ToolAccess				= { "STEAM_0:0:740023", }
 // Use custom players spawns instead of the ones defined by the map.
 // Change boolean to true or false
 GM.CustomSpawns				= true
+
+// Should teammates take damage.
+// Change boolean to true or false
+GM.FriendlyFire				= true
+
+// Max number of team kills.
+//Change to interger. 4 = default.
+GM.MaxTKs					= 4
+
+// Should we kick for to many teamkills.
+// Change boolean to true or false
+GM.KickForTKs 				= true
+
+// Should we ban for to many teamkills.
+// Change boolean to true or false
+GM.BanForTKs 				= false
+
+// How long until inmates can speak
+//Change to interger. 20 = default.
+GM.SpeakTime				= 20
 
 // Give Guards/Inmates starter weapons as defined below in the table/array.
 // Change boolean to true or false
@@ -62,7 +83,21 @@ GM.MarkerMax = 6
 // Change to interger. 2 = default
 GM.RebelKills = 2
 
-GM.WardenProps = { "models/props_junk/wood_crate001a.mdl", "models/props_c17/oildrum001.mdl", "models/props_trainstation/trashcan_indoor001b.mdl", "models/props_junk/PopCan01a.mdl", "models/props_junk/TrafficCone001a.mdl", }
+GM.WardenProps = {
+	"models/props_junk/wood_crate001a.mdl",
+	"models/props_c17/oildrum001.mdl",
+	"models/props_trainstation/trashcan_indoor001b.mdl",
+	"models/props_junk/PopCan01a.mdl",
+	"models/props_junk/TrafficCone001a.mdl",
+}
+
+
+GM.MarkerIcons = {
+		[1] = {Text = "Move", Mat = "icons/pin.png"},
+		[2] = {Text = "Caution", Mat = "icons/caution.png"},
+		[3] = {Text = "Regroup", Mat = "icons/group.png"},
+		[4] = {Text = "Observe", Mat = "icons/eye.png"},
+}
 
 // Votemap Materials
 GM:AddMapImage("ba_jail_alcatraz_pre-final", "jailbreak/maps/ba_jail_alcatraz_pre-final.png")

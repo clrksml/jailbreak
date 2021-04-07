@@ -16,6 +16,8 @@ team.SetUp(TEAM_SPECTATOR, "Spectator", Color(159, 164, 53), false)
 team.SetUp(TEAM_GUARD_DEAD, "Dead Guard", Color(34, 38, 103), false)
 team.SetUp(TEAM_INMATE_DEAD, "Dead Inmate", Color(103, 34, 38), false)
 
+GM.Ratio = GetConVar("jb_ratio"):GetInt()
+
 function team.GetColors( ply )
 	if ply:IsInmate() then
 		return { [1] = Color(175, 59, 58), [2] = team.GetColor(ply:Team()) }

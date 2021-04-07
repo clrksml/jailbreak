@@ -72,3 +72,13 @@ concommand.Add("jb_tp", function(ply, cmd, args)
 		ply:ThirdPerson()
 	end
 end)
+
+concommand.Add("jb_language", function(ply, cmd, args)
+	local language = args[1] or "english"
+
+	for k, v in pairs(GAMEMODE:GetLanguages()) do
+		if k == language or v.Alias == language then
+			ply:SetNWString("lang", lang)
+		end
+	end
+end)

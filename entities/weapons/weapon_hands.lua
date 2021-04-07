@@ -1,4 +1,3 @@
-
 AddCSLuaFile()
 
 SWEP.PrintName = "Fists"
@@ -33,7 +32,27 @@ local SwingSound = Sound( "WeaponFrag.Throw" )
 local HitSound = Sound( "Flesh.ImpactHard" )
 
 function SWEP:Initialize()
-	self:SetHoldType("fist")
+	self:SetHoldType("normal")
+	self.LastReload = CurTime() + 1
+end
+
+function SWEP:Reload()
+	if self.LastReload > CurTime() then return end
+
+	if self:GetHoldType() == "fist" then
+		self:SetHoldType("normal")
+	else
+		self:SetHoldType("fist")
+	end
+	self.LastReload = CurTime() + 1
+
+	local vm = self.Owner:GetViewModel()
+	vm:SendViewModelMatchingSequence( vm:LookupSequence( self:GetHoldType() ) )
+
+
+	if CLIENT then
+		self.Owner:EmitSound(Sound("Grenade.Blip"))
+	end
 end
 
 function SWEP:SetupDataTables()
@@ -149,19 +168,31 @@ end
 function SWEP:Deploy()
 	local speed = 1.4
 
-	local vm = self.Owner:GetViewModel()
-	
-	if IsValid(vm) then
-		vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_draw" ) )
+	local vm = self.Owner:GetViewModel() or false
+	if vm and IsValid(vm) then
+		vm:SendViewModelMatchingSequence( vm:LookupSequence( "melee" ) )
 		vm:SetPlaybackRate( speed )
 
 		self:SetNextPrimaryFire( CurTime() + vm:SequenceDuration() / speed )
 		self:SetNextSecondaryFire( CurTime() + vm:SequenceDuration() / speed )
 		self:UpdateNextIdle()
-	end
-	
-	if ( SERVER ) then
-		self:SetCombo( 0 )
+
+
+		if SERVER then
+			self:SetCombo( 0 )
+		end
+	else
+		if SERVER then
+			// no more Sequence errors
+			local ply = self.Owner
+
+			ply:StripWeapon("weapon_hands")
+
+			timer.Simple(1, function()
+				ply:Give("weapon_hands")
+				ply:SelectWeapon("weapon_hands")
+			end)
+		end
 	end
 
 	return true

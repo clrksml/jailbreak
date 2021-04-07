@@ -8,10 +8,10 @@ function PANEL:Init()
 	self:SetSize(ScrW() + 40, ScrH() + 40)
 	self.Paint = function(_, w, h)
 		if LocalPlayer():IsInmate() then
-			surface.DrawImage(w / 2 - 256, h / 2 - 256, 512,  512, "icons/cell.png")
+			surface.DrawImage(w / 2 - 64, h / 2 - 64, 127,  128, "icons/cell.png")
 		end
 		if LocalPlayer():IsGuard() then
-			surface.DrawImage(w / 2 - 256, h / 2 - 256, 512,  512, "icons/prison.png")
+			surface.DrawImage(w / 2 - 64, h / 2 - 64, 128,  128, "icons/jail.png")
 		end
 	end
 	self.Think = function()

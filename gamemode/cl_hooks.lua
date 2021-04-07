@@ -24,10 +24,10 @@ function GM:InitPostEntity()
 	GAMEMODE.LastRequestPlayer = false
 	GAMEMODE.Notifactions = {}
 	GAMEMODE.MarkerIcons = {
-		[1] = "icons/move.png",
-		[2] = "icons/cone.png",
-		[3] = "icons/group.png",
-		[4] = "icons/eye.png",
+		[1] = {Text = "Move", Mat = "icons/pin.png"},
+		[2] = {Text = "Caution", Mat = "icons/caution.png"},
+		[3] = {Text = "Regroup", Mat = "icons/group.png"},
+		[4] = {Text = "Observe", Mat = "icons/eye.png"},
 	}
 
 	/*if LocalPlayer():GetPData("HasPlayedJB") ==  "0" then
@@ -39,7 +39,8 @@ function GM:InitPostEntity()
 
 	local keys = { ["F1"] = "gm_showhelp", ["F2"] = "gm_showteam", ["F3"] = "gm_showspare1", ["F4"] = "gm_showspare2", ["Q"] = "+menu", ["C"] = "+menu_context", ["G"] = "impulse 201" }
 
-	timer.Simple(3, function()
+	// if we error here its because the client is way to slow to load.
+	timer.Simple(5, function()
 		for k, v in pairs(keys) do
 			if input.LookupBinding(v) then
 				net.Start("JB_SendKeys")
@@ -60,6 +61,8 @@ function GM:InitPostEntity()
 	end)
 
 	if IsMounted("cstrike") then return end
+
+	--RunConsoleCommand("jb_language", tostring(GetConVarString( "gmod_language" )))
 	LocalPlayer():ChatPrint(LocalPlayer():GetPhrase("nocss"))
 end
 
@@ -107,7 +110,7 @@ function GM:PostDrawTranslucentRenderables()
 	local ang = LocalPlayer():EyeAngles()
 	ang:RotateAroundAxis(ang:Up(), 270)
 	ang:RotateAroundAxis(ang:Forward(), 90)
-	
+
 	if GAMEMODE.Phase == 1 then
 		if IsValid(GAMEMODE:GetWarden()) and GAMEMODE:GetWarden():Alive() then
 			cam.Start3D2D(GAMEMODE:GetWarden():EyePos() + Vector(0, 0, 25), ang, 0.2)
@@ -241,10 +244,17 @@ function GM:DrawAmmo()
 		else
 			ammo = LocalPlayer():GetActiveWeapon():Clip1() .. "/" .. LocalPlayer():GetActiveWeapon():Ammo1()
 		end
-
+		local weap = LocalPlayer():GetActiveWeapon():GetPrintName()
+		if LocalPlayer():GetActiveWeapon():GetPrintName() == "Fists" then
+			if LocalPlayer():GetActiveWeapon():GetHoldType() == "fist" then
+				weap = "Hands"
+			else
+				weap = "Fists"
+			end
+		end
 		surface.DrawGradient(x, y, 140, 24, 2, Color(45, 45, 45), Color(47, 47, 47))
 		surface.DrawGradient(x, y, 140, 24, 1, color[1], color[2])
-		surface.DrawSentence("qlt", Color(255, 255, 255), x + 4, y + 4, LocalPlayer():GetActiveWeapon():GetPrintName() .. " " .. ammo)
+		surface.DrawSentence("qlt", Color(255, 255, 255), x + 4, y + 4, weap .. " " .. ammo)
 	end
 end
 
@@ -275,6 +285,13 @@ function GM:DrawWeaponSelection()
 			surface.DrawSentence("qsm", Color(255, 255, 255), x + 16, y + 2, k)
 			surface.DrawSentence("qsm", Color(255, 255, 255), x + 34, y + 2, v)
 		else
+			if LocalPlayer():GetActiveWeapon():GetPrintName() == "Fists" then
+				if LocalPlayer():GetActiveWeapon():GetHoldType() == "fist" then
+					v = "Hands"
+				else
+					v = "Fists"
+				end
+			end
 			surface.DrawGradient(x, y, 220, 24, 2, color[1], color[2])
 			surface.DrawGradient(x, y, 24, 24, 2, Color(101, 101, 101), Color(115, 115, 115))
 			surface.DrawSentence("qsm", Color(255, 255, 255), x + 8, y + 2, k)
@@ -354,7 +371,6 @@ function GM:DrawMarkers( src )
 	if GAMEMODE.Markers and #GAMEMODE.Markers > 0 then
 		for k, v in pairs(GAMEMODE.Markers) do
 			if v.Time > CurTime() then
-
 				surface.SetFont("qmd")
 
 				local ang = LocalPlayer():EyeAngles()
@@ -363,7 +379,7 @@ function GM:DrawMarkers( src )
 
 				cam.Start3D2D(v.Pos + Vector(0, 0, 32), ang, 1)
 					surface.SetDrawColor(Color(255, 255, 250))
-					surface.SetMaterial(Material(GAMEMODE.MarkerIcons[v.Icon], "smooth"))
+					surface.SetMaterial(Material(GAMEMODE.MarkerIcons[v.Icon].Mat, "smooth"))
 					surface.DrawTexturedRect(0, 0, 32, 32)
 				cam.End3D2D()
 			end
@@ -389,7 +405,7 @@ function GM:DrawLR()
 		if GAMEMODE.LastRequest == "" then
 			surface.DrawGradient(x, y, 150, 24, 1, Color(115, 115, 115), Color(101, 101, 101))
 			surface.DrawSentence("qsm", Color(255, 255, 255), x + 9, y + 3, LocalPlayer():GetPhrase("lastrequest5"))
-		
+
 			for id, val in SortedPairs(GAMEMODE.LastRequests) do
 				surface.DrawGradient(x, y, 150, 24, 1, Color(115, 115, 115), Color(101, 101, 101))
 				surface.DrawGradient(x, y, 24, 24, 1, color[1], color[2])
@@ -403,7 +419,7 @@ function GM:DrawLR()
 	 	if !GAMEMODE.LastRequestPlayer and GAMEMODE.LastRequest != "" then
 			surface.DrawGradient(x, y, 150, 24, 1, Color(115, 115, 115), Color(101, 101, 101))
 			surface.DrawSentence("qsm", Color(255, 255, 255), x + 9, y + 3, LocalPlayer():GetPhrase("lastrequest5"))
-		
+
 			for id, val in ipairs(team.GetPlayers(TEAM_GUARD)) do
 				if id < 10 then
 					surface.DrawGradient(x, y, 150, 24, 1, Color(115, 115, 115), Color(101, 101, 101))
@@ -460,11 +476,11 @@ function GM:DrawHelp()
 			str = string.Replace(str, "gm_showspare2", LocalPlayer():GetKey("gm_showspare2"):upper())
 		end
 
-		if str:find("+menu_context.") then
+		if str:find("menu_context") then
 			str = string.Replace(str, "+menu_context", LocalPlayer():GetKey("+menu_context"):upper())
 		end
 
-		if str:find("+menu.") then
+		if str:find("menu") then
 			str = string.Replace(str, "+menu", LocalPlayer():GetKey("+menu"):upper())
 		end
 
@@ -1120,7 +1136,7 @@ function GM:CalcView( ply, pos, ang, fov )
 end
 
 function GM:OnSpawnMenuOpen()
-	SelectProp()
+	SelectMarker()
 end
 
 function GM:OnContextMenuOpen()

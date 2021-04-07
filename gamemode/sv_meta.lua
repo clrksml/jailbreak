@@ -9,8 +9,6 @@ local pairs = pairs
 local Color = Color
 local Format = Format
 
-local colors, color = { Color(255, 0, 0), Color(255,165,0), Color(255, 255, 0), Color(0, 255, 0), Color(0, 0, 255), Color(128, 0, 128) }
-
 function Player:SendData()
 	local time = 5
 
@@ -34,12 +32,10 @@ function Player:AddMarker( icon )
 	if !GAMEMODE.Markers then GAMEMODE.Markers = {} end
 	if #GAMEMODE.Markers >= GAMEMODE.MarkerMax and GAMEMODE.MarkerMax != 0 then return end
 
-	color = table.FindNext(colors, color)
-	
 	local ang = self:GetAngles()
 	ang:RotateAroundAxis(ang:Up(), 90)
-
-	GAMEMODE.Markers[#GAMEMODE.Markers + 1] = { Time = CurTime() + GAMEMODE.MarkerDuration, Pos = self:GetEyeTraceNoCursor().HitPos, Ang = ang, Color = color, Icon = icon  }
+	
+	GAMEMODE.Markers[#GAMEMODE.Markers + 1] = { Time = CurTime() + GAMEMODE.MarkerDuration, Pos = self:GetEyeTraceNoCursor().HitPos, Ang = ang, Icon = icon  }
 	
 	local tbl = util.Compress(util.TableToJSON(GAMEMODE.Markers))
 	net.Start("JB_Marker")
